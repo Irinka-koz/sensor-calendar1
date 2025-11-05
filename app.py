@@ -133,7 +133,7 @@ def build_heatmap(df):
     
             # Only show Notes if there is something
             if day_notes[day]:
-                text += f"<b>Notes:</b><br>{day_notes[day]}"
+                text += f"<b>Notes:</b>{day_notes[day]}"
     
             hover_data.loc[sensor, day] = text
 
@@ -284,6 +284,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
