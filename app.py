@@ -243,6 +243,8 @@ with col_left:
 # =============================
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
-build_heatmap_plotly(df)  # <--- use the Plotly version
+build_heatmap(df)
+
+
 
 
