@@ -68,7 +68,7 @@ def build_heatmap(df):
         # Temporary storage for notes to be displayed on hover
         day_notes = {day: "" for day in all_days} 
 
-      for _, row in sdata.iterrows():
+    for _, row in sdata.iterrows():
             mode = row["mode"]
             
             # Check for NaT/None before calling normalize()
@@ -282,6 +282,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
