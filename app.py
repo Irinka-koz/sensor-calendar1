@@ -201,7 +201,7 @@ with col_left:
         key="sensor", 
         label_visibility="collapsed"
     )
-    
+    st.write("Select Event")
     mode = st.selectbox(
         "Mode", 
         ["start", "end", "change battery", "change card"], 
@@ -235,6 +235,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
