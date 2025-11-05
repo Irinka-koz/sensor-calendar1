@@ -12,7 +12,7 @@ from google.oauth2.service_account import Credentials  # <-- this is required
 # -------------------------
 
 SCOPE = ['https://www.googleapis.com/auth/spreadsheets','https://www.googleapis.com/auth/drive']
-SHEET_ID = "YOUR_SHEET_ID_HERE"
+SHEET_ID = "1LcT1Oh6oRdDAhcggbXclkwQRk8MC1ICKyemnjoeULOE"
 
 creds = Credentials.from_service_account_info(dict(st.secrets["google_service_account"]), scopes=SCOPE)
 client = gspread.authorize(creds)
@@ -84,6 +84,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
