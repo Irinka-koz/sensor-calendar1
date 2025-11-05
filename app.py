@@ -63,42 +63,31 @@ def build_heatmap(df):
         sdata = df[df["Sensor_ID"] == sensor].sort_values("date")
         active = False
         start_active = None
-        
-    for _, row in sdata.iterrows():
-        mode = row["mode"]
-        d = row["date"]
-        if pd.isna(d):
-            continue
-    
-        if mode == "start":
-            start_active = d
-            active = True
-        elif mode == "end" and start_active is not None:
-            end_active = d
-            mask = (all_days >= start_active) & (all_days <= end_active)
-            for day in all_days[mask]:
-                # Default active color
-                heatmap_data.loc[sensor, day] = 1
-            active = False
-            start_active = None
-        elif mode in ["change battery", "change card"]:
-            if d in heatmap_data.columns:
-                current_val = heatmap_data.loc[sensor, d]
-                # Determine new value based on current + event
-                if mode == "change battery":
-                    if current_val == 1:      # active + battery
-                        heatmap_data.loc[sensor, d] = 2
-                    elif current_val == 3:    # card + battery
-                        heatmap_data.loc[sensor, d] = 4
-                    else:                     # only battery
-                        heatmap_data.loc[sensor, d] = 2
-                elif mode == "change card":
-                    if current_val == 1:      # active + card
-                        heatmap_data.loc[sensor, d] = 3
-                    elif current_val == 2:    # battery + card
-                        heatmap_data.loc[sensor, d] = 4
-                    else:                     # only card
-                        heatmap_data.loc[sensor, d] = 3
+
+        for _, row in sdata.iterrows():
+            mode = row["mode"]
+            d = row["date"]
+            if pd.isna(d):
+                continue
+
+            if mode == "start":
+                start_active = d
+                active = True
+            elif mode == "end" and start_active is not None:
+                end_active = d
+                mask = (all_days >= start_active) & (all_days <= end_active)
+                heatmap_data.loc[sensor, all_days[mask]] = 1
+                active = False
+                start_active = None
+            elif mode == "change battery":
+                if d in heatmap_data.columns:
+                    heatmap_data.loc[sensor, d] = 2
+            elif mode == "change card":
+                if d in heatmap_data.columns:
+                    if heatmap_data.loc[sensor, d] == 2:
+                        heatmap_data.loc[sensor, d] = 4  # purple
+                    else:
+                        heatmap_data.loc[sensor, d] = 3  # orange
 
         # If started but never ended — mark until today
         if active and start_active is not None:
@@ -109,7 +98,9 @@ def build_heatmap(df):
     years = sorted(set(all_days.year))
     for yr in years:
         year_days = all_days[all_days.year == yr]
-        fig, ax = plt.subplots(figsize=(12, len(sensors)*0.6))
+        fig, ax = plt.subplots(figsize=(12, len(sensors) * 0.6))
+
+        # Draw rectangles
         for i, sensor in enumerate(sensors):
             for j, d in enumerate(year_days):
                 val = heatmap_data.loc[sensor, d]
@@ -121,7 +112,6 @@ def build_heatmap(df):
                     ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_card))
                 elif val == 4:
                     ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_both))
-
 
         ax.set_xlim(0, len(year_days))
         ax.set_ylim(0, len(sensors))
@@ -248,6 +238,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
