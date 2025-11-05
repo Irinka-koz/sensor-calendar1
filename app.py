@@ -178,7 +178,7 @@ sensor_info = {
 # =============================
 # TOP ROW: TABLE + INPUT FORM
 # =============================
-col_left, col_right = st.columns([3, 1])
+col_left, col_right = st.columns([1, 3])
 
 # --- Right column: Sensor info table ---
 with col_right:
@@ -234,6 +234,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Activity Calendar")
 build_heatmap(df)
+
 
 
 
