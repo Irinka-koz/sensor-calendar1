@@ -41,88 +41,90 @@ def build_heatmap(df):
         st.warning("No data yet.")
         return
 
-    # Ensure date is datetime
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    start_date = pd.Timestamp("2024-01-01")
+    end_date = pd.Timestamp(date.today())
+    all_days = pd.date_range(start=start_date, end=end_date)
 
-    # Define time range
-    start_date = pd.to_datetime("2024-01-01")
-    end_date = pd.to_datetime(date.today())
+    sensors = df['Sensor_ID'].dropna().unique()
+    heatmap_data = pd.DataFrame(0, index=sensors, columns=all_days)
 
-    # Create a complete date range
-    all_dates = pd.date_range(start=start_date, end=end_date)
-
-    # Prepare color codes
-    color_map = {
-        "active": "green",
-        "battery": "red",
-        "card": "orange",
-        "both": "purple"
-    }
-
-    # Initialize result table
-    sensors = df["Sensor_ID"].unique()
-    pivot = pd.DataFrame(index=sensors, columns=all_dates, data=None)
+    # Define color codes
+    color_active = "#00CC66"   # green
+    color_battery = "#FF3333"  # red
+    color_card = "#FF9900"     # orange
 
     for sensor in sensors:
-        s_df = df[df["Sensor_ID"] == sensor].sort_values("date")
-        active_periods = []
+        sdata = df[df["Sensor_ID"] == sensor].sort_values("date")
         active = False
-        start_time = None
+        start_active = None
 
-        for _, row in s_df.iterrows():
-            if row["mode"] == "start":
-                start_time = row["date"]
-                active = True
-            elif row["mode"] == "end" and active and start_time is not None:
-                active_periods.append((start_time, row["date"]))
-                active = False
-                start_time = None
-
-        # If still active (no end)
-        if active and start_time is not None:
-            active_periods.append((start_time, end_date))
-
-        # Mark active (green)
-        for s, e in active_periods:
-            mask = (pivot.columns >= s) & (pivot.columns <= e)
-            pivot.loc[sensor, mask] = "active"
-
-        # Mark change battery / card
-        for _, row in s_df.iterrows():
+        for _, row in sdata.iterrows():
+            mode = row["mode"]
             d = row["date"]
-            if d in pivot.columns:
-                current = pivot.loc[sensor, d]
-                if row["mode"] == "change battery":
-                    if current == "card":
-                        pivot.loc[sensor, d] = "both"
+
+            if pd.isna(d):
+                continue
+
+            if mode == "start":
+                start_active = d
+                active = True
+
+            elif mode == "end" and start_active is not None:
+                end_active = d
+                mask = (all_days >= start_active) & (all_days <= end_active)
+                heatmap_data.loc[sensor, all_days[mask]] = 1
+                active = False
+                start_active = None
+
+            elif mode == "change battery":
+                if d in heatmap_data.columns:
+                    heatmap_data.loc[sensor, d] = 2  # red
+
+            elif mode == "change card":
+                if d in heatmap_data.columns:
+                    if heatmap_data.loc[sensor, d] == 2:
+                        heatmap_data.loc[sensor, d] = 3  # both
                     else:
-                        pivot.loc[sensor, d] = "battery"
-                elif row["mode"] == "change card":
-                    if current == "battery":
-                        pivot.loc[sensor, d] = "both"
-                    else:
-                        pivot.loc[sensor, d] = "card"
+                        heatmap_data.loc[sensor, d] = 4  # orange
 
-    # Map to colors
-    color_pivot = pivot.replace(color_map).fillna("white")
+        # If started but never ended — mark until today
+        if active and start_active is not None:
+            mask = (all_days >= start_active) & (all_days <= end_date)
+            heatmap_data.loc[sensor, all_days[mask]] = 1
 
-    # Convert to numerical values for heatmap display
-    color_to_num = {v: i for i, v in enumerate(color_map.values())}
-    num_pivot = color_pivot.replace(color_to_num)
+    # Create figure
+    fig, ax = plt.subplots(figsize=(12, len(sensors) * 0.6))
 
-    # Custom color palette
-    palette = sns.color_palette(["white", "green", "red", "orange", "purple"])
+    # Draw colored rectangles
+    for i, sensor in enumerate(sensors):
+        for j, d in enumerate(all_days):
+            val = heatmap_data.loc[sensor, d]
+            if val == 1:
+                ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_active))
+            elif val == 2:
+                ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_battery))
+            elif val == 4:
+                ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_card))
+            elif val == 3:
+                ax.add_patch(plt.Rectangle((j, i), 0.5, 1, color=color_battery))
+                ax.add_patch(plt.Rectangle((j+0.5, i), 0.5, 1, color=color_card))
 
-    fig, ax = plt.subplots(figsize=(12, 4))
-    sns.heatmap(num_pivot, cmap=palette, cbar=False, ax=ax, linewidths=0.5)
-
-    ax.set_title("Sensor Activity Timeline")
+    # Axis settings
+    ax.set_xlim(0, len(all_days))
+    ax.set_ylim(0, len(sensors))
+    ax.set_yticks([i + 0.5 for i in range(len(sensors))])
+    ax.set_yticklabels(sensors)
+    ax.set_xticks(range(0, len(all_days), max(len(all_days)//10, 1)))
+    ax.set_xticklabels([d.strftime("%b %d") for d in all_days[::max(len(all_days)//10, 1)]],
+                       rotation=45, ha='right')
+    ax.invert_yaxis()
     ax.set_xlabel("Date")
     ax.set_ylabel("Sensor ID")
-    ax.set_xticks(range(0, len(all_dates), max(1, len(all_dates)//10)))
-    ax.set_xticklabels([d.strftime("%d-%b") for d in all_dates[::max(1, len(all_dates)//10)]], rotation=45, ha='right')
+    ax.set_title("Sensor Operation and Maintenance Heatmap")
 
     st.pyplot(fig)
+
 
 
 
@@ -164,6 +166,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
