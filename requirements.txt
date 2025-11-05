@@ -2,3 +2,6 @@ streamlit
 pandas
 matplotlib
 seaborn
+gspread 
+gspread_dataframe 
+oauth2client
