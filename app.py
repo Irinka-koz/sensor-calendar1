@@ -40,10 +40,47 @@ def build_heatmap(df):
     if df.empty:
         st.warning("No data yet.")
         return
-    pivot = df.pivot_table(index="date", columns="Sensor_ID", values="mode", aggfunc="count", fill_value=0)
-    fig, ax = plt.subplots(figsize=(8,4))
-    sns.heatmap(pivot.T, cmap="YlOrRd", linewidths=0.5, ax=ax)
-    ax.set_title("Sensor Activity Heatmap")
+
+    # Ensure 'date' is datetime and create full range
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    start_date = pd.Timestamp("2024-01-01")
+    end_date = pd.Timestamp(date.today())
+    full_range = pd.date_range(start=start_date, end=end_date)
+
+    # Pivot the data (Sensor_ID x Date)
+    pivot = df.pivot_table(
+        index="Sensor_ID",
+        columns="date",
+        values="mode",
+        aggfunc="count",
+        fill_value=0
+    )
+
+    # Reindex columns to fill missing days
+    pivot = pivot.reindex(columns=full_range, fill_value=0)
+
+    # Build heatmap
+    fig, ax = plt.subplots(figsize=(12, 4))
+    sns.heatmap(
+        pivot,
+        cmap="YlOrRd",
+        linewidths=0.5,
+        ax=ax,
+        cbar_kws={'label': 'Activity count'}
+    )
+
+    ax.set_title("Sensor Activity Heatmap (since Jan 2024)")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Sensor ID")
+
+    # Rotate x-ticks and make them readable
+    ax.set_xticks(range(0, len(full_range), max(len(full_range)//10, 1)))
+    ax.set_xticklabels(
+        [d.strftime("%b %d") for d in full_range[::max(len(full_range)//10, 1)]],
+        rotation=45,
+        ha="right"
+    )
+
     st.pyplot(fig)
 
 # -------------------------
@@ -84,6 +121,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
