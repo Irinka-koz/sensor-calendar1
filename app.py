@@ -156,7 +156,7 @@ def build_heatmap(df):
         # Add vertical lines to separate months
         month_starts = [d for d in year_days if d.day == 1]
         for m_start in month_starts:
-            fig.add_vline(x=m_start, line=dict(color='gray', width=1, dash='dash'))
+            fig.add_vline(x=m_start, line=dict(color='gray', width=1))
 
         # Set x-axis ticks at month centers with abbreviations
         month_centers = []
@@ -175,11 +175,26 @@ def build_heatmap(df):
             ticktext=month_labels
         )
 
+        # Add horizontal lines between sensors
+        shapes = []
+        for i in range(1, len(sensors)):
+            shapes.append(dict(
+                type="line",
+                xref="x",
+                yref="y",
+                x0=year_days[0],
+                x1=year_days[-1],
+                y0=i - 0.5,
+                y1=i - 0.5,
+                line=dict(color="lightgray", width=1, dash="dash")
+            ))
+        fig.update_layout(shapes=shapes)
+
         fig.update_layout(
             title=f"{yr}",
             yaxis_title="Sensor ID",
             xaxis_title="Month",
-            height=len(sensors)*30 + 150
+            height=len(sensors)*60 + 150
         )
 
         st.plotly_chart(fig, use_container_width=True)
@@ -265,6 +280,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
