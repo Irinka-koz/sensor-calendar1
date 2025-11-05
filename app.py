@@ -36,91 +36,106 @@ def save_sheet(df):
 # -------------------------
 # Heatmap
 # -------------------------
+import pandas as pd
+import matplotlib.pyplot as plt
+import calendar
+
 def build_heatmap(df):
-    if df.empty:
-        st.warning("No data yet.")
-        return
+    sensors = df['sensor'].unique()
+    start_date = df['start'].min().normalize()
+    end_date = df['end'].max().normalize()
+    all_days = pd.date_range(start_date, end_date, freq='D')
 
-    df['date'] = pd.to_datetime(df['date'], errors='coerce')
-    start_date = pd.Timestamp("2024-01-01")
-    end_date = pd.Timestamp(date.today())
-    all_days = pd.date_range(start=start_date, end=end_date)
+    years = sorted(set(all_days.year))
+    today = pd.Timestamp.today().normalize()
 
-    sensors = df['Sensor_ID'].dropna().unique()
-    heatmap_data = pd.DataFrame(0, index=sensors, columns=all_days)
+    for yr in years:
+        year_start = pd.Timestamp(f"{yr}-01-01")
+        year_end = pd.Timestamp(f"{yr}-12-31")
+        # if current year, cut to today
+        if yr == today.year:
+            year_end = today
 
-    # Colors
-    color_active = "#00CC66"   # green
-    color_battery = "#FF3333"  # red
-    color_card = "#FF9900"     # orange
-    color_both = "#800080"     # purple
+        year_days = pd.date_range(year_start, year_end, freq='D')
+        heatmap_data = pd.DataFrame(0, index=sensors, columns=year_days)
 
-    # Fill heatmap_data
-    for sensor in sensors:
-        sdata = df[df["Sensor_ID"] == sensor].sort_values("date")
-        active = False
-        start_active = None
+        for _, row in df.iterrows():
+            sensor = row['sensor']
+            s = row['start'].normalize()
+            e = row['end'].normalize()
+            if s.year < yr:
+                s = year_start
+            if e.year > yr:
+                e = year_end
+            period = pd.date_range(s, e, freq='D')
+            for d in period:
+                if d in heatmap_data.columns:
+                    heatmap_data.loc[sensor, d] = 1
 
-        for _, row in sdata.iterrows():
-            mode = row["mode"]
-            d = row["date"]
-            if pd.isna(d):
-                continue
-
-            if mode == "start":
-                start_active = d
-                active = True
-            elif mode == "end" and start_active is not None:
-                end_active = d
-                mask = (all_days >= start_active) & (all_days <= end_active)
-                heatmap_data.loc[sensor, all_days[mask]] = 1
-                active = False
-                start_active = None
-            elif mode == "change battery":
+            # color overlays
+            if pd.notna(row.get('change_card')):
+                d = row['change_card'].normalize()
                 if d in heatmap_data.columns:
                     heatmap_data.loc[sensor, d] = 2
-            elif mode == "change card":
+            if pd.notna(row.get('change_batt')):
+                d = row['change_batt'].normalize()
                 if d in heatmap_data.columns:
+                    # if both happen same day
                     if heatmap_data.loc[sensor, d] == 2:
-                        heatmap_data.loc[sensor, d] = 4  # purple
+                        heatmap_data.loc[sensor, d] = 4
                     else:
-                        heatmap_data.loc[sensor, d] = 3  # orange
+                        heatmap_data.loc[sensor, d] = 3
 
-        # If started but never ended — mark until today
-        if active and start_active is not None:
-            mask = (all_days >= start_active) & (all_days <= end_date)
-            heatmap_data.loc[sensor, all_days[mask]] = 1
+        # plot
+        fig, ax = plt.subplots(figsize=(14, len(sensors) * 0.4))
+        cmap = {
+            0: 'white',      # no data
+            1: 'green',      # active
+            2: 'orange',     # card
+            3: 'red',        # battery
+            4: 'purple'      # both
+        }
 
-    # Multi-year heatmaps
-    years = sorted(set(all_days.year))
-    for yr in years:
-        year_days = all_days[all_days.year == yr]
-        fig, ax = plt.subplots(figsize=(12, len(sensors)*0.6))
-        for i, sensor in enumerate(sensors):
-            for j, d in enumerate(year_days):
-                val = heatmap_data.loc[sensor, d]
-                if val == 1:
-                    ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_active))
-                elif val == 2:
-                    ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_battery))
-                elif val == 3:
-                    ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_card))
-                elif val == 4:
-                    ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_both))
+        for j, sensor in enumerate(heatmap_data.index):
+            for i, d in enumerate(heatmap_data.columns):
+                ax.add_patch(plt.Rectangle((i, j), 1, 1, color=cmap[heatmap_data.loc[sensor, d]]))
 
-        # Axis settings
         ax.set_xlim(0, len(year_days))
         ax.set_ylim(0, len(sensors))
-        ax.set_yticks([i + 0.5 for i in range(len(sensors))])
-        ax.set_yticklabels(sensors)
-        ax.set_xticks(range(0, len(year_days), max(len(year_days)//10, 1)))
-        ax.set_xticklabels([d.strftime("%b %d") for d in year_days[::max(len(year_days)//10, 1)]],
-                           rotation=45, ha='right')
-        ax.invert_yaxis()
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Sensor ID")
-        ax.set_title(f"Sensor Heatmap {yr}")
-        st.pyplot(fig)
+        ax.set_yticks(range(len(sensors)))
+        ax.set_yticklabels(heatmap_data.index)
+        ax.set_title(f"Sensor activity - {yr}")
+
+        # --- vertical lines for month boundaries ---
+        month_ends = []
+        month_names = []
+        for m in range(1, 13):
+            last_day = pd.Timestamp(f"{yr}-{m}-{calendar.monthrange(yr, m)[1]}")
+            if last_day < year_start or last_day > year_end:
+                continue
+            month_ends.append((last_day - year_start).days)
+            month_names.append(calendar.month_abbr[m])
+
+        for x in month_ends:
+            ax.axvline(x=x, color='gray', linestyle='--', linewidth=0.5)
+
+        # x-axis month names centered between lines
+        month_positions = []
+        for i in range(len(month_ends)):
+            if i == 0:
+                start = 0
+            else:
+                start = month_ends[i - 1]
+            end = month_ends[i]
+            month_positions.append((start + end) / 2)
+
+        ax.set_xticks(month_positions)
+        ax.set_xticklabels(month_names)
+        ax.tick_params(axis='x', rotation=0)
+
+        plt.tight_layout()
+        plt.show()
+
 
 
 
@@ -164,6 +179,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
