@@ -1,0 +1,7 @@
+Sensor_ID,Location,Type,mode,date
+S1,Field A,PM,start,2025-11-03T00:00:00
+S2,Field B,RH,start,2025-11-02T00:00:00
+S2,Field B,RH,change battary,2025-11-16T00:00:00
+S3,Field A,Temp,start,2025-11-10T00:00:00
+S2,Field B,RH,change card,2025-11-20T00:00:00
+S3,Field A,Temp,end,2025-11-30T00:00:00
