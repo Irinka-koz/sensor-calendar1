@@ -12,8 +12,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 # Google Sheets Setup
 # -------------------------
 SCOPE = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
-CREDS_FILE = "service_account.json"   # your downloaded JSON key
-SHEET_ID = "YOUR_SHEET_ID_HERE"       # replace with your Google Sheet ID
+CREDS_FILE = "sensorapp-477311-da5677ca88eb.json"   # your downloaded JSON key
+SHEET_ID = "1LcT1Oh6oRdDAhcggbXclkwQRk8MC1ICKyemnjoeULOE"       # replace with your Google Sheet ID
 
 creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
 client = gspread.authorize(creds)
@@ -85,3 +85,4 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
