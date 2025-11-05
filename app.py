@@ -63,28 +63,35 @@ def build_heatmap(df):
             mode = row["mode"]
             d = row["date"]
 
+            if pd.isna(d):
+                continue
+
             if mode == "start":
                 start_active = d
                 active = True
 
             elif mode == "end" and start_active is not None:
                 end_active = d
-                heatmap_data.loc[sensor, start_active:end_active] = 1
+                mask = (all_days >= start_active) & (all_days <= end_active)
+                heatmap_data.loc[sensor, all_days[mask]] = 1
                 active = False
                 start_active = None
 
             elif mode == "change battery":
-                heatmap_data.loc[sensor, d] = 2  # red
+                if d in heatmap_data.columns:
+                    heatmap_data.loc[sensor, d] = 2  # red
 
             elif mode == "change card":
-                if heatmap_data.loc[sensor, d] == 2:
-                    heatmap_data.loc[sensor, d] = 3  # both (half red/orange)
-                else:
-                    heatmap_data.loc[sensor, d] = 4  # orange
+                if d in heatmap_data.columns:
+                    if heatmap_data.loc[sensor, d] == 2:
+                        heatmap_data.loc[sensor, d] = 3  # both
+                    else:
+                        heatmap_data.loc[sensor, d] = 4  # orange
 
         # If started but never ended — mark until today
         if active and start_active is not None:
-            heatmap_data.loc[sensor, start_active:end_date] = 1
+            mask = (all_days >= start_active) & (all_days <= end_date)
+            heatmap_data.loc[sensor, all_days[mask]] = 1
 
     # Create figure
     fig, ax = plt.subplots(figsize=(12, len(sensors) * 0.6))
@@ -94,14 +101,12 @@ def build_heatmap(df):
         for j, d in enumerate(all_days):
             val = heatmap_data.loc[sensor, d]
             if val == 1:
-                color = color_active
-                ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color))
+                ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_active))
             elif val == 2:
                 ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_battery))
             elif val == 4:
                 ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_card))
             elif val == 3:
-                # Half red, half orange
                 ax.add_patch(plt.Rectangle((j, i), 0.5, 1, color=color_battery))
                 ax.add_patch(plt.Rectangle((j+0.5, i), 0.5, 1, color=color_card))
 
@@ -159,6 +164,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
