@@ -162,41 +162,82 @@ def build_heatmap(df):
 # -------------------------
 # App UI
 # -------------------------
-st.title("Sensor Maintenance Calendar")
+# -------------------------
+# App UI
+# -------------------------
+st.set_page_config(layout="wide")  # make full-width layout
 
-df = load_sheet()
+# --- Layout with two columns ---
+col_left, col_right = st.columns([1, 3])  # left narrow, right wide
 
-sensor_info = {
-    "S1": {"Location": "Field A", "Type": "PM"},
-    "S2": {"Location": "Field B", "Type": "RH"},
-    "S3": {"Location": "Field A", "Type": "Temp"},
-}
+# --- Left column: Sensor info table ---
+with col_left:
+    st.subheader("Sensors Info Table")
 
-st.header("Add a New Record")
-sensor_id = st.selectbox("Select Sensor ID", list(sensor_info.keys()))
-location = sensor_info[sensor_id]["Location"]
-stype = sensor_info[sensor_id]["Type"]
-st.write(f"**Location:** {location}")
-st.write(f"**Type:** {stype}")
+    sensor_info_table = pd.DataFrame([
+        {"Sensor ID": "S1", "Location": "Field A", "Type": "PM"},
+        {"Sensor ID": "S2", "Location": "Field B", "Type": "RH"},
+        {"Sensor ID": "S3", "Location": "Field A", "Type": "Temp"},
+    ])
 
-mode = st.selectbox("Select Mode", ["start", "end", "change battery", "change card"])
-selected_date = st.date_input("Select Date", value=date.today(), format="DD/MM/YYYY", max_value=date.today())
+    st.dataframe(sensor_info_table, use_container_width=True)
 
-if st.button("Add Record"):
-    new_row = {
-        "Sensor_ID": sensor_id,
-        "Location": location,
-        "Type": stype,
-        "mode": mode,
-        "date": pd.to_datetime(selected_date)
+# --- Right column: main app content ---
+with col_right:
+    # Align to the right (CSS trick)
+    st.markdown(
+        """
+        <style>
+        .block-container {
+            text-align: right;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.title("Sensor Maintenance Calendar")
+
+    df = load_sheet()
+
+    sensor_info = {
+        "S1": {"Location": "Field A", "Type": "PM"},
+        "S2": {"Location": "Field B", "Type": "RH"},
+        "S3": {"Location": "Field A", "Type": "Temp"},
     }
-    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-    save_sheet(df)
-    st.success("Record added successfully!")
-    df = load_sheet()  # reload for heatmap
 
-st.header("Sensor Activity Calendar")
-build_heatmap(df)
+    st.header("Add a New Record")
+    sensor_id = st.selectbox("Select Sensor ID", list(sensor_info.keys()))
+    location = sensor_info[sensor_id]["Location"]
+    stype = sensor_info[sensor_id]["Type"]
+    st.write(f"**Location:** {location}")
+    st.write(f"**Type:** {stype}")
+
+    mode = st.selectbox("Select Mode", ["start", "end", "change battery", "change card"])
+    selected_date = st.date_input(
+        "Select Date",
+        value=date.today(),
+        format="DD/MM/YYYY",
+        max_value=date.today()
+    )
+
+    if st.button("Add Record"):
+        new_row = {
+            "Sensor_ID": sensor_id,
+            "Location": location,
+            "Type": stype,
+            "mode": mode,
+            "date": pd.to_datetime(selected_date)
+        }
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        save_sheet(df)
+        st.success("Record added successfully!")
+        df = load_sheet()  # reload for heatmap
+
+    st.header("Sensor Activity Calendar")
+    build_heatmap(df)
+
+
 
 
 
