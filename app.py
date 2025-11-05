@@ -182,8 +182,8 @@ def build_heatmap(df):
             colorscale=colorscale,
             zmin=0,
             zmax=4,
-            xgap=1,  # Adjust gap for visual separation
-            ygap=1,
+            xgap=0,  # Adjust gap for visual separation
+            ygap=0,
             showscale=False  # <-- this hides the legend/colorbar
                     ))
 
@@ -286,6 +286,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
