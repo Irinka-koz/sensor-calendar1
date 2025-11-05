@@ -193,14 +193,27 @@ with col_right:
 with col_left:
     st.subheader("Add a New Record")
 
-    # Compact dropdowns
-    row1, row2, row3 = st.rows([2, 2, 2])  # relative widths
-    with row1:
-        sensor_id = st.selectbox("Sensor ID", list(sensor_info.keys()), key="sensor", label_visibility="collapsed")
-    with row2:
-        mode = st.selectbox("Mode", ["start", "end", "change battery", "change card"], label_visibility="collapsed")
-    with row3:
-        selected_date = st.date_input("Select Date", value=date.today(), format="DD/MM/YYYY", max_value=date.today())
+    # Vertical compact inputs
+    sensor_id = st.selectbox(
+        "Sensor ID", 
+        list(sensor_info.keys()), 
+        key="sensor", 
+        label_visibility="collapsed"
+    )
+    
+    mode = st.selectbox(
+        "Mode", 
+        ["start", "end", "change battery", "change card"], 
+        label_visibility="collapsed"
+    )
+    
+    selected_date = st.date_input(
+        "Select Date", 
+        value=date.today(), 
+        format="DD/MM/YYYY", 
+        max_value=date.today()
+    )
+
 
     if st.button("Add Record", use_container_width=True):
         new_row = {
@@ -221,6 +234,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Activity Calendar")
 build_heatmap(df)
+
 
 
 
