@@ -162,12 +162,6 @@ def build_heatmap(df):
 # -------------------------
 # App UI
 # -------------------------
-# -------------------------
-# App UI
-# -------------------------
-# -------------------------
-# App UI
-# -------------------------
 st.set_page_config(layout="wide")  # use full width
 
 st.title("Sensor Maintenance Calendar")
@@ -184,10 +178,10 @@ sensor_info = {
 # =============================
 # TOP ROW: TABLE + INPUT FORM
 # =============================
-col_left, col_right = st.columns([1.2, 2])
+col_left, col_right = st.columns([3, 1])
 
-# --- Left column: Sensor info table ---
-with col_left:
+# --- Right column: Sensor info table ---
+with col_right:
     st.subheader("Sensors Info")
     sensor_info_table = pd.DataFrame([
         {"Sensor ID": k, "Location": v["Location"], "Type": v["Type"]}
@@ -195,8 +189,8 @@ with col_left:
     ])
     st.dataframe(sensor_info_table, use_container_width=True, height=150)
 
-# --- Right column: input form ---
-with col_right:
+# --- Left column: input form ---
+with col_left:
     st.subheader("Add a New Record")
 
     # Compact dropdowns
@@ -234,6 +228,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Activity Calendar")
 build_heatmap(df)
+
 
 
 
