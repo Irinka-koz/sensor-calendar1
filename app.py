@@ -180,7 +180,7 @@ st.write(f"**Location:** {location}")
 st.write(f"**Type:** {stype}")
 
 mode = st.selectbox("Select Mode", ["start", "end", "change battery", "change card"])
-selected_date = st.date_input("Select Date", value=date.today())
+selected_date = st.date_input("Select Date", value=date.today(), format="DD/MM/YYYY")
 
 if st.button("Add Record"):
     new_row = {
@@ -197,6 +197,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Calendar")
 build_heatmap(df)
+
 
 
 
