@@ -4,53 +4,56 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import date
 
-CSV_FILE = "calendar.csv"
+import gspread
+from gspread_dataframe import get_as_dataframe, set_with_dataframe
+from oauth2client.service_account import ServiceAccountCredentials
 
 # -------------------------
-# Load CSV
+# Google Sheets Setup
 # -------------------------
-def load_csv():
-    try:
-        df = pd.read_csv(CSV_FILE, sep=",")
-    except FileNotFoundError:
-        df = pd.DataFrame(columns=["Sensor_ID", "Location", "Type", "mode", "date"])
-        df.to_csv(CSV_FILE, sep=",", index=False)
-    df["Date"] = pd.to_datetime(df["date"], errors="coerce")
+SCOPE = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+CREDS_FILE = "service_account.json"   # your downloaded JSON key
+SHEET_ID = "YOUR_SHEET_ID_HERE"       # replace with your Google Sheet ID
+
+creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
+client = gspread.authorize(creds)
+sheet = client.open_by_key(SHEET_ID).sheet1  # first worksheet
+
+# -------------------------
+# Load Sheet
+# -------------------------
+def load_sheet():
+    df = get_as_dataframe(sheet, evaluate_formulas=True, header=0)
+    df = df.dropna(how='all')  # remove empty rows
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')
     return df
 
+# -------------------------
+# Save Sheet
+# -------------------------
+def save_sheet(df):
+    set_with_dataframe(sheet, df)
 
 # -------------------------
-# Save CSV
-# -------------------------
-def save_csv(df):
-    df.to_csv(CSV_FILE, sep=",", index=False)
-
-
-# -------------------------
-# Heatmap Builder
+# Heatmap
 # -------------------------
 def build_heatmap(df):
     if df.empty:
-        st.warning("No data available yet.")
+        st.warning("No data yet.")
         return
-
-    # Count actions per day per sensor
     pivot = df.pivot_table(index="date", columns="Sensor_ID", values="mode", aggfunc="count", fill_value=0)
-
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = plt.subplots(figsize=(8,4))
     sns.heatmap(pivot.T, cmap="YlOrRd", linewidths=0.5, ax=ax)
     ax.set_title("Sensor Activity Heatmap")
     st.pyplot(fig)
 
-
 # -------------------------
-# Streamlit UI
+# App UI
 # -------------------------
-st.title("Sensor Maintenance Log and Heatmap")
+st.title("Sensor Maintenance Log & Heatmap (Google Sheets)")
 
-df = load_csv()
+df = load_sheet()
 
-# Define known sensors
 sensor_info = {
     "S1": {"Location": "Field A", "Type": "PM"},
     "S2": {"Location": "Field B", "Type": "RH"},
@@ -58,40 +61,27 @@ sensor_info = {
 }
 
 st.header("Add a New Record")
-
-# Select sensor
-sensor_id = st.selectbox("Select Sensor ID", options=list(sensor_info.keys()))
-
-# Auto-fill location and type
+sensor_id = st.selectbox("Select Sensor ID", list(sensor_info.keys()))
 location = sensor_info[sensor_id]["Location"]
 stype = sensor_info[sensor_id]["Type"]
-
 st.write(f"**Location:** {location}")
 st.write(f"**Type:** {stype}")
 
-# Choose mode (only one)
-mode = st.selectbox("Select Mode", options=["start", "end", "change battery", "change card"])
-
-# Pick date
+mode = st.selectbox("Select Mode", ["start", "end", "change battery", "change card"])
 selected_date = st.date_input("Select Date", value=date.today())
 
-# Add record button
 if st.button("Add Record"):
     new_row = {
         "Sensor_ID": sensor_id,
         "Location": location,
         "Type": stype,
         "mode": mode,
-        "date": pd.to_datetime(selected_date),  # ensure datetime
+        "date": pd.to_datetime(selected_date)
     }
     df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-    save_csv(df)
-    df = load_csv()  # reload for heatmap
+    save_sheet(df)
     st.success("Record added successfully!")
+    df = load_sheet()  # reload for heatmap
 
-# Show updated heatmap
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
-
-
-
