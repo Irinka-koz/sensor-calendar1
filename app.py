@@ -192,7 +192,7 @@ def build_heatmap(df):
                 x1=last_day,
                 y0=0,
                 y1=1,
-                line=dict(color='gray', width=1, dash='dash')
+                line=dict(color='gray', width=1,  dash="solid")
             ))
         
         # Horizontal lines between sensors
@@ -205,7 +205,7 @@ def build_heatmap(df):
                 x1=year_days[-1],
                 y0=i - 0.5,
                 y1=i - 0.5,
-                line=dict(color="lightgray", width=1, dash="solid")
+                line=dict(color="black", width=1.3, dash="solid")
             ))
         
         # Apply shapes
@@ -302,6 +302,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
