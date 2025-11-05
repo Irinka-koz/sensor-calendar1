@@ -98,9 +98,7 @@ def build_heatmap(df):
     years = sorted(set(all_days.year))
     for yr in years:
         year_days = all_days[all_days.year == yr]
-        fig, ax = plt.subplots(figsize=(12, len(sensors) * 0.6))
-
-        # Draw rectangles
+        fig, ax = plt.subplots(figsize=(12, len(sensors)*0.6))
         for i, sensor in enumerate(sensors):
             for j, d in enumerate(year_days):
                 val = heatmap_data.loc[sensor, d]
@@ -112,6 +110,7 @@ def build_heatmap(df):
                     ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_card))
                 elif val == 4:
                     ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_both))
+
 
         ax.set_xlim(0, len(year_days))
         ax.set_ylim(0, len(sensors))
@@ -238,6 +237,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
