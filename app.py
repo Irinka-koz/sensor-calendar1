@@ -6,6 +6,7 @@ from datetime import date
 import plotly.graph_objects as go
 import mplcursors
 import calendar
+import plotly.express as px
 
 import gspread
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
@@ -50,25 +51,36 @@ def build_heatmap(df):
     all_days = pd.date_range(start=start_date, end=end_date)
 
     sensors = df['Sensor_ID'].dropna().unique()
+    # Now we store both the VALUE (for color) and the HOVER TEXT
     heatmap_data = pd.DataFrame(0, index=sensors, columns=all_days)
+    hover_data = pd.DataFrame("", index=sensors, columns=all_days) 
 
-    # Colors mapping
-    color_active = "#00CC66"   # green
-    color_battery = "#FF3333"  # red
-    color_card = "#FF9900"     # orange
-    color_both = "#800080"     # purple
-
-    # Fill heatmap_data
+    # Colors mapping (for value 0 to 4)
+    # 0: Inactive/Empty, 1: Active, 2: Battery, 3: Card, 4: Both
+    # Note: Plotly uses a continuous color scale or explicit color mapping.
+    
+    # Fill heatmap_data and hover_data (Logic remains mostly the same)
     for sensor in sensors:
         sdata = df[df["Sensor_ID"] == sensor].sort_values("date")
         active = False
         start_active = None
+        
+        # Temporary storage for notes to be displayed on hover
+        day_notes = {day: "" for day in all_days} 
 
         for _, row in sdata.iterrows():
             mode = row["mode"]
-            d = row["date"]
+            d = row["date"].normalize() # Use only date part
+            note = row["note"] if pd.notna(row["note"]) else ""
+            
             if pd.isna(d):
                 continue
+                
+            # Accumulate notes for that day/sensor combination
+            if note:
+                day_notes[d] += f"- {mode}: {note}<br>"
+            else:
+                day_notes[d] += f"- {mode}<br>"
 
             if mode == "start":
                 start_active = d
@@ -77,98 +89,113 @@ def build_heatmap(df):
                 end_active = d
                 mask = (all_days >= start_active) & (all_days <= end_active)
                 for day in all_days[mask]:
-                    heatmap_data.loc[sensor, day] = 1  # active green
+                    # Priority 1: Active
+                    if heatmap_data.loc[sensor, day] == 0:
+                        heatmap_data.loc[sensor, day] = 1 
                 active = False
                 start_active = None
             elif mode in ["change battery", "change card"]:
                 if d in heatmap_data.columns:
                     current_val = heatmap_data.loc[sensor, d]
                     if mode == "change battery":
-                        if current_val == 1:      # active + battery
-                            heatmap_data.loc[sensor, d] = 2
-                        elif current_val == 3:    # card + battery
+                        if current_val == 1:       # active + battery (Val: 2)
+                            heatmap_data.loc[sensor, d] = 2 
+                        elif current_val == 3:     # card + battery (Val: 4)
                             heatmap_data.loc[sensor, d] = 4
-                        else:                     # only battery
+                        elif current_val == 0:     # only battery (Val: 2)
                             heatmap_data.loc[sensor, d] = 2
                     elif mode == "change card":
-                        if current_val == 1:      # active + card
+                        if current_val == 1:       # active + card (Val: 3)
                             heatmap_data.loc[sensor, d] = 3
-                        elif current_val == 2:    # battery + card
+                        elif current_val == 2:     # battery + card (Val: 4)
                             heatmap_data.loc[sensor, d] = 4
-                        else:                     # only card
+                        elif current_val == 0:     # only card (Val: 3)
                             heatmap_data.loc[sensor, d] = 3
-
+        
         # If started but never ended — mark until today
         if active and start_active is not None:
             mask = (all_days >= start_active) & (all_days <= end_date)
             for day in all_days[mask]:
                 if heatmap_data.loc[sensor, day] == 0:
-                    heatmap_data.loc[sensor, day] = 1
+                    heatmap_data.loc[sensor, day] = 1 # Active (Val: 1)
+        
+        # Fill hover text based on value and accumulated notes
+        for day in all_days:
+            val = heatmap_data.loc[sensor, day]
+            status = ""
+            # Map value to status text
+            if val == 1: status = "Active"
+            elif val == 2: status = "Change Battery"
+            elif val == 3: status = "Change Card"
+            elif val == 4: status = "Battery & Card Change"
+            else: status = "Inactive"
+            
+            # Combine status and notes
+            hover_text = f"<b>Date:</b> {day.strftime('%Y-%m-%d')}<br>"
+            hover_text += f"<b>Sensor:</b> {sensor}<br>"
+            hover_text += f"<b>Status:</b> {status}<br><br>"
+            
+            day_key = day.normalize()
+            if day_key in day_notes and day_notes[day_key]:
+                hover_text += f"<b>Events:</b><br>{day_notes[day_key]}"
+            
+            hover_data.loc[sensor, day] = hover_text
 
-    # Multi-year heatmaps
+
+    # Multi-year heatmaps (Plotly handles multiple years better in one figure)
     years = sorted(set(all_days.year))
     for yr in years:
         year_days = all_days[all_days.year == yr]
-        fig, ax = plt.subplots(figsize=(12, len(sensors) * 0.6))
+        data_to_plot = heatmap_data.loc[:, year_days]
+        hover_to_plot = hover_data.loc[:, year_days]
 
-        # Draw rectangles
-        for i, sensor in enumerate(sensors):
-            for j, d in enumerate(year_days):
-                val = heatmap_data.loc[sensor, d]
-                if val == 1:
-                    ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_active))
-                elif val == 2:
-                    ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_battery))
-                elif val == 3:
-                    ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_card))
-                elif val == 4:
-                    ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_both))
+        # Use Plotly Express or Graph Objects for an interactive heatmap
+        
+        # Define the custom color scale and color mapping
+        colorscale = [
+            [0/4, '#FFFFFF'],  # Value 0: White (Inactive/Empty)
+            [1/4, '#00CC66'],  # Value 1: Green (Active)
+            [2/4, '#FF3333'],  # Value 2: Red (Battery)
+            [3/4, '#FF9900'],  # Value 3: Orange (Card)
+            [4/4, '#800080']   # Value 4: Purple (Both)
+        ]
+        
+        fig = go.Figure(data=go.Heatmap(
+            z=data_to_plot.values,
+            x=data_to_plot.columns.strftime('%Y-%m-%d'),
+            y=data_to_plot.index.tolist(),
+            text=hover_to_plot.values, 
+            hoverinfo='text', # Crucial: tells Plotly to use the 'text' array for hover
+            colorscale=colorscale,
+            zmin=0,
+            zmax=4,
+            xgap=1,  # Adjust gap for visual separation
+            ygap=1,
+            colorbar=dict(
+                title='Status',
+                tickvals=[0.5, 1.5, 2.5, 3.5], # Positions for ticks
+                ticktext=['Inactive', 'Active', 'Battery', 'Card/Both'] # Simplified Legend
+            )
+        ))
 
-        ax.set_xlim(0, len(year_days))
-        ax.set_ylim(0, len(sensors))
-        ax.set_yticks([i + 0.5 for i in range(len(sensors))])
-        ax.set_yticklabels(sensors)
-        ax.set_title(f"{yr}", fontsize=13)
+        fig.update_layout(
+            title=f"Sensor Maintenance Calendar - {yr}",
+            xaxis_nticks=len(year_days) // 30, # Simple way to limit x-axis ticks
+            xaxis={'tickangle': 45},
+            yaxis={'title': 'Sensor ID'},
+            height=len(sensors) * 30 + 150 # Dynamic height
+        )
 
-        # --- vertical lines for month boundaries ---
-        import calendar
-        year_start = pd.Timestamp(f"{yr}-01-01")
-        year_end = pd.Timestamp(f"{yr}-12-31")
-        if yr == date.today().year:
-            year_end = pd.Timestamp(date.today())
-
-        month_ends = []
-        month_names = []
-        for m in range(1, 13):
-            last_day = pd.Timestamp(f"{yr}-{m}-{calendar.monthrange(yr, m)[1]}")
-            if last_day < year_start or last_day > year_end:
-                continue
-            month_ends.append((last_day - year_start).days)
-            month_names.append(calendar.month_abbr[m])
-
-        for x in month_ends:
-            ax.axvline(x=x, color='gray', linestyle='--', linewidth=0.5)
-
-        # --- horizontal lines between sensors ---
-        for y in range(len(sensors)):
-            ax.axhline(y=y, color='lightgray', linestyle='--', linewidth=1)
-
-        # x-axis month names centered between lines
-        month_positions = []
-        for i in range(len(month_ends)):
-            start = 0 if i == 0 else month_ends[i - 1]
-            end = month_ends[i]
-            month_positions.append((start + end) / 2)
-
-        ax.set_xticks(month_positions)
-        ax.set_xticklabels(month_names)
-        ax.tick_params(axis='x', rotation=0)
-
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
-
-
+        # Better X-axis month labels (optional but improves clarity)
+        month_starts = [d for d in year_days if d.day == 1]
+        fig.update_xaxes(
+            tickmode='array',
+            tickvals=[d.strftime('%Y-%m-%d') for d in month_starts],
+            ticktext=[calendar.month_abbr[d.month] for d in month_starts],
+            showgrid=False
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
 # -------------------------
 # App UI
 # -------------------------
@@ -250,6 +277,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
