@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import date
 
-CSV_FILE = r"D:\post_doc\sensor_calendar\calendar.csv"
+CSV_FILE = calendar.csv
 
 # -------------------------
 # Load CSV
@@ -91,3 +91,4 @@ if st.button("Add Record"):
 # Show updated heatmap
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
