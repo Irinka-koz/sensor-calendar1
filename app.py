@@ -81,15 +81,17 @@ if st.button("Add Record"):
         "Sensor_ID": sensor_id,
         "Location": location,
         "Type": stype,
-        "Mode": mode,
-        "Date": selected_date,
+        "mode": mode,
+        "date": pd.to_datetime(selected_date),  # ensure datetime
     }
     df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
     save_csv(df)
+    df = load_csv()  # reload for heatmap
     st.success("Record added successfully!")
 
 # Show updated heatmap
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
