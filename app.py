@@ -189,7 +189,7 @@ with col_left:
         """
         <style>
         .block-container {
-            text-align: right;
+            text-align: left;
         }
         </style>
         """,
@@ -236,6 +236,7 @@ with col_left:
 
     st.header("Sensor Activity Calendar")
     build_heatmap(df)
+
 
 
 
