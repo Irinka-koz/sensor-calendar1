@@ -194,7 +194,7 @@ with col_left:
     st.subheader("Add a New Record")
 
     # Compact dropdowns
-    row1, row2, row3 = st.columns([2, 2, 2])  # relative widths
+    row1, row2, row3 = st.rows([2, 2, 2])  # relative widths
     with row1:
         sensor_id = st.selectbox("Sensor ID", list(sensor_info.keys()), key="sensor", label_visibility="collapsed")
     with row2:
@@ -221,6 +221,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Activity Calendar")
 build_heatmap(df)
+
 
 
 
