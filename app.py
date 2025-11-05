@@ -47,58 +47,55 @@ def build_heatmap(df):
     all_days = pd.date_range(start=start_date, end=end_date)
 
     sensors = df['Sensor_ID'].dropna().unique()
+    heatmap_data = pd.DataFrame(0, index=sensors, columns=all_days)
 
-    # Define color codes
+    # Colors
     color_active = "#00CC66"   # green
     color_battery = "#FF3333"  # red
     color_card = "#FF9900"     # orange
-    color_both = "#9933FF"     # purple for battery+card same day
+    color_both = "#800080"     # purple
 
-    # Split by year
-    years = sorted(set(all_days.year))
-    for yr in years:
-        year_days = all_days[all_days.year == yr]
-        heatmap_data = pd.DataFrame(0, index=sensors, columns=year_days)
+    # Fill heatmap_data
+    for sensor in sensors:
+        sdata = df[df["Sensor_ID"] == sensor].sort_values("date")
+        active = False
+        start_active = None
 
-        for sensor in sensors:
-            sdata = df[df["Sensor_ID"] == sensor].sort_values("date")
-            active = False
-            start_active = None
+        for _, row in sdata.iterrows():
+            mode = row["mode"]
+            d = row["date"]
+            if pd.isna(d):
+                continue
 
-            for _, row in sdata.iterrows():
-                mode = row["mode"]
-                d = row["date"]
-                if pd.isna(d) or d.year != yr:
-                    continue
-
-                if mode == "start":
-                    start_active = d
-                    active = True
-
-                elif mode == "end" and start_active is not None:
-                    mask = (year_days >= start_active) & (year_days <= d)
-                    heatmap_data.loc[sensor, year_days[mask]] = 1
-                    active = False
-                    start_active = None
-
-                elif mode == "change battery":
-                    heatmap_data.loc[sensor, d] = 2  # red
-
-                elif mode == "change card":
+            if mode == "start":
+                start_active = d
+                active = True
+            elif mode == "end" and start_active is not None:
+                end_active = d
+                mask = (all_days >= start_active) & (all_days <= end_active)
+                heatmap_data.loc[sensor, all_days[mask]] = 1
+                active = False
+                start_active = None
+            elif mode == "change battery":
+                if d in heatmap_data.columns:
+                    heatmap_data.loc[sensor, d] = 2
+            elif mode == "change card":
+                if d in heatmap_data.columns:
                     if heatmap_data.loc[sensor, d] == 2:
                         heatmap_data.loc[sensor, d] = 4  # purple
                     else:
                         heatmap_data.loc[sensor, d] = 3  # orange
 
-            # If started but never ended — mark until last day of this year
-            if active and start_active is not None:
-                mask = (year_days >= start_active)
-                heatmap_data.loc[sensor, year_days[mask]] = 1
+        # If started but never ended — mark until today
+        if active and start_active is not None:
+            mask = (all_days >= start_active) & (all_days <= end_date)
+            heatmap_data.loc[sensor, all_days[mask]] = 1
 
-        # Create figure for this year
-        fig, ax = plt.subplots(figsize=(12, len(sensors) * 0.6))
-
-        # Draw colored rectangles
+    # Multi-year heatmaps
+    years = sorted(set(all_days.year))
+    for yr in years:
+        year_days = all_days[all_days.year == yr]
+        fig, ax = plt.subplots(figsize=(12, len(sensors)*0.6))
         for i, sensor in enumerate(sensors):
             for j, d in enumerate(year_days):
                 val = heatmap_data.loc[sensor, d]
@@ -122,8 +119,7 @@ def build_heatmap(df):
         ax.invert_yaxis()
         ax.set_xlabel("Date")
         ax.set_ylabel("Sensor ID")
-        ax.set_title(f"Sensor Operation and Maintenance Heatmap - {yr}")
-
+        ax.set_title(f"Sensor Heatmap {yr}")
         st.pyplot(fig)
 
 
@@ -168,6 +164,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
