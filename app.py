@@ -7,7 +7,7 @@ from datetime import date
 import gspread
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
 from oauth2client.service_account import ServiceAccountCredentials
-
+from google.oauth2.service_account import Credentials  # <-- this is required
 # -------------------------
 # Google Sheets Setup
 # -------------------------
@@ -85,5 +85,6 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
