@@ -168,10 +168,10 @@ def build_heatmap(df):
 st.set_page_config(layout="wide")  # make full-width layout
 
 # --- Layout with two columns ---
-col_left, col_right = st.columns([1, 3])  # left narrow, right wide
+col_left, col_right = st.columns([3, 1])  # left narrow, right wide
 
 # --- Left column: Sensor info table ---
-with col_left:
+with col_right:
     st.subheader("Sensors Info Table")
 
     sensor_info_table = pd.DataFrame([
@@ -183,7 +183,7 @@ with col_left:
     st.dataframe(sensor_info_table, use_container_width=True)
 
 # --- Right column: main app content ---
-with col_right:
+with col_left:
     # Align to the right (CSS trick)
     st.markdown(
         """
@@ -236,6 +236,7 @@ with col_right:
 
     st.header("Sensor Activity Calendar")
     build_heatmap(df)
+
 
 
 
