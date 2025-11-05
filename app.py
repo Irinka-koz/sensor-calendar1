@@ -216,7 +216,17 @@ def build_heatmap(df):
 
 
         fig.update_layout(
-            title=f"{yr}", yaxis_title="Sensor ID", xaxis_title="Month", height=len(sensors)*60 + 150 )
+            title=dict(
+                text=f"{yr}",   # Your title
+                x=0.5,          # Center horizontally (0 = left, 0.5 = center, 1 = right)
+                xanchor='center',
+                yanchor='top',
+                font=dict(size=24)  # Optional: make it bigger
+            ),
+            yaxis_title="Sensor ID",
+            xaxis_title="Month",
+            height=len(sensors)*60 + 150
+        )
 
         st.plotly_chart(fig, use_container_width=True)
 
@@ -301,6 +311,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
