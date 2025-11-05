@@ -185,8 +185,7 @@ def build_heatmap(df):
             xgap=1,  # Adjust gap for visual separation
             ygap=1,
             showscale=False  # <-- this hides the legend/colorbar
-            )
-        ))
+                    ))
 
         fig.update_layout(
             title=f"{yr}",
@@ -295,6 +294,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
