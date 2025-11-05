@@ -159,6 +159,7 @@ def build_heatmap(df):
 
         # Add vertical lines to separate months
         # Add vertical lines to separate months
+        shapes = [] 
         month_starts = [d for d in year_days if d.day == 1]
         if month_starts:  # only add lines if there are month starts
             for m_start in month_starts:
@@ -298,6 +299,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
