@@ -108,20 +108,41 @@ def build_heatmap(df):
                 elif val == 4:
                     ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color_both))
 
-        # Axis settings
         ax.set_xlim(0, len(year_days))
         ax.set_ylim(0, len(sensors))
-        ax.set_yticks([i + 0.5 for i in range(len(sensors))])
-        ax.set_yticklabels(sensors)
-        ax.set_xticks(range(0, len(year_days), max(len(year_days)//10, 1)))
-        ax.set_xticklabels([d.strftime("%b %d") for d in year_days[::max(len(year_days)//10, 1)]],
-                           rotation=45, ha='right')
-        ax.invert_yaxis()
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Sensor ID")
-        ax.set_title(f"Sensor Heatmap {yr}")
-        st.pyplot(fig)
+        ax.set_yticks(range(len(sensors)))
+        ax.set_yticklabels(heatmap_data.index)
+        ax.set_title(f"Sensor activity - {yr}")
 
+        # --- vertical lines for month boundaries ---
+        month_ends = []
+        month_names = []
+        for m in range(1, 13):
+            last_day = pd.Timestamp(f"{yr}-{m}-{calendar.monthrange(yr, m)[1]}")
+            if last_day < year_start or last_day > year_end:
+                continue
+            month_ends.append((last_day - year_start).days)
+            month_names.append(calendar.month_abbr[m])
+
+        for x in month_ends:
+            ax.axvline(x=x, color='gray', linestyle='--', linewidth=0.5)
+
+        # x-axis month names centered between lines
+        month_positions = []
+        for i in range(len(month_ends)):
+            if i == 0:
+                start = 0
+            else:
+                start = month_ends[i - 1]
+            end = month_ends[i]
+            month_positions.append((start + end) / 2)
+
+        ax.set_xticks(month_positions)
+        ax.set_xticklabels(month_names)
+        ax.tick_params(axis='x', rotation=0)
+
+        plt.tight_layout()
+        plt.show()
 # -------------------------
 # App UI
 # -------------------------
@@ -160,6 +181,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
