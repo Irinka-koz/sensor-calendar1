@@ -88,7 +88,7 @@ def build_heatmap(df):
     
             # Accumulate notes only if note column has data
             if note:
-                day_notes[d] += f"- {mode}: {note}<br>"
+                day_notes[d] += f"- {note}<br>"
     
             if mode == "start":
                 start_active = d
@@ -284,6 +284,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
