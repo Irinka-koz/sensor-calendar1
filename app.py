@@ -214,7 +214,8 @@ with col_left:
         format="DD/MM/YYYY", 
         max_value=date.today()
     )
-
+    # Note input
+    note = st.text_input("Note (optional)")
 
     if st.button("Add Record", use_container_width=True):
         new_row = {
@@ -222,7 +223,8 @@ with col_left:
             "Location": location,
             "Type": stype,
             "mode": mode,
-            "date": pd.to_datetime(selected_date)
+            "date": pd.to_datetime(selected_date),
+            "note": note
         }
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         save_sheet(df)
@@ -235,6 +237,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
