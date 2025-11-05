@@ -151,7 +151,8 @@ def build_heatmap(df):
         ax.tick_params(axis='x', rotation=0)
 
         plt.tight_layout()
-        plt.show()
+        st.pyplot(fig)
+        plt.close(fig)
 # -------------------------
 # App UI
 # -------------------------
@@ -190,6 +191,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
