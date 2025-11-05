@@ -165,55 +165,49 @@ def build_heatmap(df):
 # -------------------------
 # App UI
 # -------------------------
-st.set_page_config(layout="wide")  # make full-width layout
+# -------------------------
+# App UI
+# -------------------------
+st.set_page_config(layout="wide")  # use full width
 
-# --- Layout with two columns ---
-col_left, col_right = st.columns([3, 1])  # left narrow, right wide
+st.title("Sensor Maintenance Calendar")
+
+df = load_sheet()
+
+# Define sensors
+sensor_info = {
+    "S1": {"Location": "Field A", "Type": "PM"},
+    "S2": {"Location": "Field B", "Type": "RH"},
+    "S3": {"Location": "Field A", "Type": "Temp"},
+}
+
+# =============================
+# TOP ROW: TABLE + INPUT FORM
+# =============================
+col_left, col_right = st.columns([1.2, 2])
 
 # --- Left column: Sensor info table ---
-with col_right:
-    st.subheader("Sensors Info Table")
-
-    sensor_info_table = pd.DataFrame([
-        {"Sensor ID": "S1", "Location": "Field A", "Type": "PM"},
-        {"Sensor ID": "S2", "Location": "Field B", "Type": "RH"},
-        {"Sensor ID": "S3", "Location": "Field A", "Type": "Temp"},
-    ])
-
-    st.dataframe(sensor_info_table, use_container_width=True)
-
-# --- Right column: main app content ---
 with col_left:
-    # Align to the right (CSS trick)
-    st.markdown(
-        """
-        <style>
-        .block-container {
-            text-align: left;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+    st.subheader("Sensors Info")
+    sensor_info_table = pd.DataFrame([
+        {"Sensor ID": k, "Location": v["Location"], "Type": v["Type"]}
+        for k, v in sensor_info.items()
+    ])
+    st.dataframe(sensor_info_table, use_container_width=True, height=150)
 
-    st.title("Sensor Maintenance Calendar")
+# --- Right column: input form ---
+with col_right:
+    st.subheader("Add a New Record")
 
-    df = load_sheet()
+    # Compact dropdowns
+    sensor_id = st.selectbox("Sensor ID", list(sensor_info.keys()), key="sensor", label_visibility="collapsed")
+    mode = st.selectbox("Mode", ["start", "end", "change battery", "change card"], key="mode", label_visibility="collapsed")
 
-    sensor_info = {
-        "S1": {"Location": "Field A", "Type": "PM"},
-        "S2": {"Location": "Field B", "Type": "RH"},
-        "S3": {"Location": "Field A", "Type": "Temp"},
-    }
-
-    st.header("Add a New Record")
-    sensor_id = st.selectbox("Select Sensor ID", list(sensor_info.keys()))
     location = sensor_info[sensor_id]["Location"]
     stype = sensor_info[sensor_id]["Type"]
-    st.write(f"**Location:** {location}")
-    st.write(f"**Type:** {stype}")
 
-    mode = st.selectbox("Select Mode", ["start", "end", "change battery", "change card"])
+    st.markdown(f"**Location:** {location}  |  **Type:** {stype}")
+
     selected_date = st.date_input(
         "Select Date",
         value=date.today(),
@@ -221,7 +215,7 @@ with col_left:
         max_value=date.today()
     )
 
-    if st.button("Add Record"):
+    if st.button("Add Record", use_container_width=True):
         new_row = {
             "Sensor_ID": sensor_id,
             "Location": location,
@@ -231,11 +225,15 @@ with col_left:
         }
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         save_sheet(df)
-        st.success("Record added successfully!")
+        st.success("✅ Record added successfully!")
         df = load_sheet()  # reload for heatmap
 
-    st.header("Sensor Activity Calendar")
-    build_heatmap(df)
+# =============================
+# BOTTOM: FULL-WIDTH HEATMAP
+# =============================
+st.markdown("---")
+st.header("Sensor Activity Calendar")
+build_heatmap(df)
 
 
 
