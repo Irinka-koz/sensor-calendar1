@@ -11,13 +11,13 @@ from oauth2client.service_account import ServiceAccountCredentials
 # -------------------------
 # Google Sheets Setup
 # -------------------------
-SCOPE = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
-CREDS_FILE = "sensorapp-477311-da5677ca88eb.json"   # your downloaded JSON key
-SHEET_ID = "1LcT1Oh6oRdDAhcggbXclkwQRk8MC1ICKyemnjoeULOE"       # replace with your Google Sheet ID
 
-creds = ServiceAccountCredentials.from_json_keyfile_name(CREDS_FILE, SCOPE)
+SCOPE = ['https://www.googleapis.com/auth/spreadsheets','https://www.googleapis.com/auth/drive']
+SHEET_ID = "YOUR_SHEET_ID_HERE"
+
+creds = Credentials.from_service_account_info(dict(st.secrets["google_service_account"]), scopes=SCOPE)
 client = gspread.authorize(creds)
-sheet = client.open_by_key(SHEET_ID).sheet1  # first worksheet
+sheet = client.open_by_key(SHEET_ID).sheet1
 
 # -------------------------
 # Load Sheet
@@ -85,4 +85,5 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
