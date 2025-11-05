@@ -192,7 +192,7 @@ def build_heatmap(df):
         ))
 
         fig.update_layout(
-            title=f"{yr}", fontsize=20
+            title=f"{yr}", fontsize=20,
             xaxis_nticks=len(year_days) // 30, # Simple way to limit x-axis ticks
             xaxis={'tickangle': 45},
             yaxis={'title': 'Sensor ID'},
@@ -290,6 +290,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
