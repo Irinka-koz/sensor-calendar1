@@ -6,4 +6,5 @@ gspread
 gspread_dataframe 
 oauth2client
 plotly>=5.0.0
+mplcursors
 
