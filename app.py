@@ -148,7 +148,6 @@ with col_right:
 with col_left:
     st.subheader("Add a New Record")
 
-    # Vertical compact inputs
     st.write("Select Sensor")
     sensor_id = st.selectbox(
         "Sensor ID", 
@@ -173,6 +172,10 @@ with col_left:
     note = st.text_input("Note (optional)")
 
     if st.button("Add Record", use_container_width=True):
+        # get location and type from sensor_info
+        location = sensor_info[sensor_id]["Location"]
+        stype = sensor_info[sensor_id]["Type"]
+
         new_row = {
             "Sensor_ID": sensor_id,
             "Location": location,
@@ -191,51 +194,4 @@ with col_left:
 # =============================
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
-build_heatmap(df)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+build_heatmap_plotly(df)  # <--- use the Plotly version
