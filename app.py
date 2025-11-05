@@ -204,8 +204,8 @@ def build_heatmap(df):
                 line=dict(color="lightgray", width=1, dash="solid")
             ))
 
-# Apply all shapes at once
-fig.update_layout(shapes=shapes)
+        # Apply all shapes at once
+        fig.update_layout(shapes=shapes)
 
 
         fig.update_layout(
@@ -298,6 +298,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
