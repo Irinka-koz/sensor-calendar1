@@ -194,6 +194,7 @@ with col_left:
     st.subheader("Add a New Record")
 
     # Vertical compact inputs
+    st.write("Select Sensor")
     sensor_id = st.selectbox(
         "Sensor ID", 
         list(sensor_info.keys()), 
@@ -232,8 +233,9 @@ with col_left:
 # BOTTOM: FULL-WIDTH HEATMAP
 # =============================
 st.markdown("---")
-st.header("Sensor Activity Calendar")
+st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
