@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import date
 import plotly.graph_objects as go
+import mplcursors
 
 import gspread
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
@@ -243,4 +244,5 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap_plotly(df)  # <--- use the Plotly version
+
 
