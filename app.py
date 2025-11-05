@@ -159,17 +159,20 @@ def build_heatmap(df):
 
         # Add vertical lines to separate months
         # Add vertical lines to separate months
-        for m_start in month_starts:
-            shapes.append(dict(
-                type="line",
-                xref="x",
-                yref="paper",  # paper coordinates span the full y-axis
-                x0=m_start,
-                x1=m_start,
-                y0=0,
-                y1=1,
-                line=dict(color='gray', width=1)
-            ))
+        month_starts = [d for d in year_days if d.day == 1]
+        if month_starts:  # only add lines if there are month starts
+            for m_start in month_starts:
+                shapes.append(dict(
+                    type="line",
+                    xref="x",
+                    yref="paper",
+                    x0=m_start,
+                    x1=m_start,
+                    y0=0,
+                    y1=1,
+                    line=dict(color='gray', width=1, dash='dash')
+                ))
+
         
         fig.update_layout(shapes=shapes)
 
@@ -295,6 +298,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
