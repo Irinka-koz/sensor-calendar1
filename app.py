@@ -47,8 +47,13 @@ def build_heatmap(df):
     end_date = pd.Timestamp(date.today())
     all_days = pd.date_range(start=start_date, end=end_date)
 
+    # Split by year
+    years = sorted(set(all_days.year))
+    for yr in years:
+        year_days = all_days[all_days.year == yr]
+    
     sensors = df['Sensor_ID'].dropna().unique()
-    heatmap_data = pd.DataFrame(0, index=sensors, columns=all_days)
+    heatmap_data = pd.DataFrame(0, index=sensors, columns= year_days)
 
     # --- Define colors ---
     color_active = "#00CC66"   # green
@@ -75,9 +80,9 @@ def build_heatmap(df):
 
             elif mode == "end" and start_active is not None:
                 end_active = d
-                mask = (all_days >= start_active) & (all_days <= end_active)
+                mask = ( year_days >= start_active) & ( year_days <= end_active)
                 # Only set to green if day is not maintenance
-                for day in all_days[mask]:
+                for day in  year_days[mask]:
                     if heatmap_data.loc[sensor, day] == 0:
                         heatmap_data.loc[sensor, day] = 1
                 active = False
@@ -99,8 +104,8 @@ def build_heatmap(df):
 
         # If started but never ended — mark until today
         if active and start_active is not None:
-            mask = (all_days >= start_active) & (all_days <= end_date)
-            for day in all_days[mask]:
+            mask = ( year_days >= start_active) & ( year_days <= end_date)
+            for day in  year_days[mask]:
                 if heatmap_data.loc[sensor, day] == 0:
                     heatmap_data.loc[sensor, day] = 1
 
@@ -108,7 +113,7 @@ def build_heatmap(df):
     fig, ax = plt.subplots(figsize=(12, len(sensors) * 0.6))
 
     for i, sensor in enumerate(sensors):
-        for j, d in enumerate(all_days):
+        for j, d in enumerate( year_days):
             val = heatmap_data.loc[sensor, d]
             if val == 1:
                 color = color_active
@@ -123,12 +128,12 @@ def build_heatmap(df):
             ax.add_patch(plt.Rectangle((j, i), 1, 1, color=color))
 
     # --- Axis settings ---
-    ax.set_xlim(0, len(all_days))
+    ax.set_xlim(0, len(year_days))
     ax.set_ylim(0, len(sensors))
     ax.set_yticks([i + 0.5 for i in range(len(sensors))])
     ax.set_yticklabels(sensors)
-    ax.set_xticks(range(0, len(all_days), max(len(all_days)//10, 1)))
-    ax.set_xticklabels([d.strftime("%b %d") for d in all_days[::max(len(all_days)//10, 1)]],
+    ax.set_xticks(range(0, len(year_days), max(len(year_days)//10, 1)))
+    ax.set_xticklabels([d.strftime("%b %d") for d in year_days[::max(len(year_days)//10, 1)]],
                        rotation=45, ha='right')
     ax.invert_yaxis()
     ax.set_xlabel("Date")
@@ -188,6 +193,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
