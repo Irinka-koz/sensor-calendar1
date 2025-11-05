@@ -128,9 +128,10 @@ def build_heatmap(df):
                       3: "Change Card", 4: "Battery & Card Change"}[val]
             text = f"<b>Date:</b> {day.strftime('%Y-%m-%d')}<br>" \
                    f"<b>Sensor:</b> {sensor}<br>" \
-                   f"<b>Status:</b> {status}<br>"
-            if day_notes[day]:
-                text += f"<b>Events:</b><br>{day_notes[day]}"
+                   f"<b>Event:</b> {status}<br>" \
+                   f"<b>Note:</b> {note}<br>"
+            #if day_notes[day]:
+                #text += f"<b>Notes:</b><br>{day_notes[day]}"
             hover_data.loc[sensor, day] = text
 
     # Multi-year heatmaps
@@ -280,6 +281,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
