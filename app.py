@@ -175,17 +175,21 @@ def build_heatmap(df):
             ticktext=month_labels
         )
 
-       # Use the month_centers we already computed
+        # Vertical lines at month ends
         shapes = []
         
-        # Vertical lines between months
-        for xc in month_centers:
+        for m in range(1, 13):
+            # Get all days in this month
+            month_days = [d for d in year_days if d.month == m]
+            if not month_days:
+                continue
+            last_day = month_days[-1]  # last day of the month within year_days
             shapes.append(dict(
                 type="line",
                 xref="x",
-                yref="paper",  # full vertical height
-                x0=xc,
-                x1=xc,
+                yref="paper",
+                x0=last_day,
+                x1=last_day,
                 y0=0,
                 y1=1,
                 line=dict(color='gray', width=1, dash='dash')
@@ -203,8 +207,8 @@ def build_heatmap(df):
                 y1=i - 0.5,
                 line=dict(color="lightgray", width=1, dash="solid")
             ))
-
-        # Apply all shapes at once
+        
+        # Apply shapes
         fig.update_layout(shapes=shapes)
 
 
@@ -298,6 +302,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
