@@ -76,22 +76,23 @@ def build_heatmap(df):
             elif mode == "end" and start_active is not None:
                 end_active = d
                 mask = (all_days >= start_active) & (all_days <= end_active)
-                heatmap_data.loc[sensor, all_days[mask]] = 1
+                # Only set to green if day is not maintenance
+                for day in all_days[mask]:
+                    if heatmap_data.loc[sensor, day] == 0:
+                        heatmap_data.loc[sensor, day] = 1
                 active = False
                 start_active = None
 
             elif mode == "change battery":
                 if d in heatmap_data.columns:
-                    # if already card — make purple
-                    if heatmap_data.loc[sensor, d] == 4:
+                    if heatmap_data.loc[sensor, d] == 4:  # card already present
                         heatmap_data.loc[sensor, d] = 5
                     else:
                         heatmap_data.loc[sensor, d] = 2
 
             elif mode == "change card":
                 if d in heatmap_data.columns:
-                    # if already battery — make purple
-                    if heatmap_data.loc[sensor, d] == 2:
+                    if heatmap_data.loc[sensor, d] == 2:  # battery already present
                         heatmap_data.loc[sensor, d] = 5
                     else:
                         heatmap_data.loc[sensor, d] = 4
@@ -99,7 +100,9 @@ def build_heatmap(df):
         # If started but never ended — mark until today
         if active and start_active is not None:
             mask = (all_days >= start_active) & (all_days <= end_date)
-            heatmap_data.loc[sensor, all_days[mask]] = 1
+            for day in all_days[mask]:
+                if heatmap_data.loc[sensor, day] == 0:
+                    heatmap_data.loc[sensor, day] = 1
 
     # --- Draw plot ---
     fig, ax = plt.subplots(figsize=(12, len(sensors) * 0.6))
@@ -185,6 +188,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
