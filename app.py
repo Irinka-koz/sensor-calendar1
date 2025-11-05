@@ -37,7 +37,9 @@ def save_sheet(df):
 # -------------------------
 # Heatmap
 # -------------------------
-def build_heatmap_plotly(df):
+import mplcursors  # pip install mplcursors
+
+def build_heatmap(df):
     if df.empty:
         st.warning("No data yet.")
         return
@@ -48,72 +50,118 @@ def build_heatmap_plotly(df):
     all_days = pd.date_range(start=start_date, end=end_date)
 
     sensors = df['Sensor_ID'].dropna().unique()
-    z = []
-    hover_text = []
+    heatmap_data = pd.DataFrame(0, index=sensors, columns=all_days)
+    hover_data = pd.DataFrame("", index=sensors, columns=all_days)
 
-    # Colors mapping
-    color_map = {
-        0: 'white',
-        1: 'green',
-        2: 'red',
-        3: 'orange',
-        4: 'purple'
-    }
+    # Colors
+    color_active = "#00CC66"   # green
+    color_battery = "#FF3333"  # red
+    color_card = "#FF9900"     # orange
+    color_both = "#800080"     # purple
 
-    # Build z matrix and hover text
+    # Fill heatmap_data and hover_data
     for sensor in sensors:
-        row_vals = []
-        row_hover = []
         sdata = df[df["Sensor_ID"] == sensor].sort_values("date")
         active = False
         start_active = None
-        for d in all_days:
-            val = 0
-            note = ""
-            # find if there is a matching row
-            rows_on_day = sdata[sdata['date'].dt.date == d.date()]
-            if not rows_on_day.empty:
-                for _, r in rows_on_day.iterrows():
-                    if r['mode'] == 'start':
-                        active = True
-                        start_active = r['date']
-                        val = 1
-                        note = r.get('note', '')
-                    elif r['mode'] == 'end' and active:
-                        active = False
-                        val = 1
-                        note = r.get('note', '')
-                    elif r['mode'] == 'change battery':
-                        val = 2
-                        note = r.get('note', '')
-                    elif r['mode'] == 'change card':
-                        val = 3 if val !=2 else 4
-                        note = r.get('note', '')
-            elif active:
+
+        for _, row in sdata.iterrows():
+            mode = row["mode"]
+            d = row["date"]
+            note = row.get("note", "")
+            if pd.isna(d):
+                continue
+
+            if mode == "start":
+                start_active = d
+                active = True
                 val = 1
-            row_vals.append(val)
-            hover_text_str = f"Date: {d.date()}<br>Sensor: {sensor}<br>Event: {rows_on_day['mode'].iloc[0] if not rows_on_day.empty else 'Active'}<br>Note: {note}"
-            row_hover.append(hover_text_str)
-        z.append(row_vals)
-        hover_text.append(row_hover)
+            elif mode == "end" and start_active is not None:
+                end_active = d
+                mask = (all_days >= start_active) & (all_days <= end_active)
+                heatmap_data.loc[sensor, all_days[mask]] = 1
+                hover_data.loc[sensor, all_days[mask]] = f"Event: start/end\nNote: {note}"
+                active = False
+                start_active = None
+                continue
+            elif mode == "change battery":
+                val = 2
+            elif mode == "change card":
+                val = 4 if heatmap_data.loc[sensor, d] == 2 else 3
+            else:
+                val = 0
 
-    fig = go.Figure(data=go.Heatmap(
-        z=z,
-        x=[d.date() for d in all_days],
-        y=sensors,
-        hoverinfo='text',
-        text=hover_text,
-        colorscale=[[0, 'white'], [0.2, 'green'], [0.4, 'red'], [0.6, 'orange'], [0.8, 'purple']],
-        showscale=False
-    ))
+            if d in heatmap_data.columns:
+                heatmap_data.loc[sensor, d] = val
+                hover_data.loc[sensor, d] = f"Event: {mode}\nNote: {note}"
 
-    fig.update_layout(
-        height=40*len(sensors)+200,
-        xaxis=dict(tickangle=-45),
-        yaxis=dict(autorange='reversed')
-    )
+        if active and start_active is not None:
+            mask = (all_days >= start_active) & (all_days <= end_date)
+            heatmap_data.loc[sensor, all_days[mask]] = 1
+            hover_data.loc[sensor, all_days[mask]] = "Event: active\nNote:"
 
-    st.plotly_chart(fig, use_container_width=True)
+    # Multi-year heatmaps
+    import calendar
+    years = sorted(set(all_days.year))
+    for yr in years:
+        year_days = all_days[all_days.year == yr]
+        fig, ax = plt.subplots(figsize=(12, len(sensors)*0.6))
+
+        for i, sensor in enumerate(sensors):
+            for j, d in enumerate(year_days):
+                val = heatmap_data.loc[sensor, d]
+                color = color_active if val==1 else color_battery if val==2 else color_card if val==3 else color_both if val==4 else "white"
+                rect = plt.Rectangle((j, i), 1, 1, color=color)
+                ax.add_patch(rect)
+                rect._hover_text = hover_data.loc[sensor, d]  # attach hover info
+
+        # Axes limits and labels
+        ax.set_xlim(0, len(year_days))
+        ax.set_ylim(0, len(sensors))
+        ax.set_yticks([i + 0.5 for i in range(len(sensors))])
+        ax.set_yticklabels(sensors)
+        ax.set_title(f"{yr}", fontsize=13)
+
+        # Vertical lines for months
+        month_ends = []
+        month_names = []
+        year_start = pd.Timestamp(f"{yr}-01-01")
+        year_end = pd.Timestamp(f"{yr}-12-31")
+        if yr == date.today().year:
+            year_end = pd.Timestamp(date.today())
+        for m in range(1, 13):
+            last_day = pd.Timestamp(f"{yr}-{m}-{calendar.monthrange(yr, m)[1]}")
+            if last_day < year_start or last_day > year_end:
+                continue
+            month_ends.append((last_day - year_start).days)
+            month_names.append(calendar.month_abbr[m])
+        for x in month_ends:
+            ax.axvline(x=x, color='gray', linestyle='--', linewidth=0.5)
+
+        # Horizontal lines between sensors
+        for y in range(len(sensors)):
+            ax.axhline(y=y, color='lightgray', linestyle='--', linewidth=1)
+
+        # Month labels
+        month_positions = [(0 if i==0 else month_ends[i-1] + month_ends[i])/2 for i in range(len(month_ends))]
+        ax.set_xticks(month_positions)
+        ax.set_xticklabels(month_names)
+        ax.tick_params(axis='x', rotation=0)
+
+        plt.tight_layout()
+
+        # -----------------
+        # Add interactive hover
+        # -----------------
+        cursor = mplcursors.cursor(ax.patches, hover=True)
+        @cursor.connect("add")
+        def on_hover(sel):
+            sel.annotation.set_text(sel.artist._hover_text)
+            sel.annotation.get_bbox_patch().set(fc="white", alpha=0.8)
+
+        st.pyplot(fig)
+        plt.close(fig)
+
 # -------------------------
 # App UI
 # -------------------------
@@ -195,3 +243,4 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap_plotly(df)  # <--- use the Plotly version
+
