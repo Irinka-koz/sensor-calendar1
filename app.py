@@ -113,7 +113,7 @@ def build_heatmap(df):
         ax.set_yticks([i + 0.5 for i in range(len(sensors))])
         ax.set_yticklabels(sensors)
         ax.set_yticklabels(heatmap_data.index)
-        ax.set_title(f"Sensor activity - {yr}")
+        ax.set_title(f"{yr}", fontsize=13)
 
         
         # --- vertical lines for month boundaries ---
@@ -162,7 +162,7 @@ def build_heatmap(df):
 # -------------------------
 # App UI
 # -------------------------
-st.title("Sensor Maintenance Log & Heatmap (Google Sheets)")
+st.title("Sensor Maintenance Calendar")
 
 df = load_sheet()
 
@@ -195,8 +195,9 @@ if st.button("Add Record"):
     st.success("Record added successfully!")
     df = load_sheet()  # reload for heatmap
 
-st.header("Sensor Activity Heatmap")
+st.header("Sensor Activity Calendar")
 build_heatmap(df)
+
 
 
 
