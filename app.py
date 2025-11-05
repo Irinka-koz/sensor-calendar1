@@ -115,12 +115,21 @@ def build_heatmap(df):
         ax.set_title(f"Sensor activity - {yr}")
 
         # --- vertical lines for month boundaries ---
+        # --- vertical lines for month boundaries ---
+        import calendar  # make sure this import is at the top of the file
+        
+        year_start = pd.Timestamp(f"{yr}-01-01")
+        year_end = pd.Timestamp(f"{yr}-12-31")
+        if yr == date.today().year:
+            year_end = pd.Timestamp(date.today())
+        
         month_ends = []
         month_names = []
         for m in range(1, 13):
             last_day = pd.Timestamp(f"{yr}-{m}-{calendar.monthrange(yr, m)[1]}")
             if last_day < year_start or last_day > year_end:
                 continue
+
             month_ends.append((last_day - year_start).days)
             month_names.append(calendar.month_abbr[m])
 
@@ -181,6 +190,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
