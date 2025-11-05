@@ -172,9 +172,12 @@ def build_heatmap(df):
         fig.update_xaxes(
             tickmode='array',
             tickvals=month_centers,
-            ticktext=month_labels
+            ticktext=month_labels,
+            tickfont=dict(size=16)
         )
-
+        fig.update_yaxes(
+            tickfont=dict(size=16)  # y-axis label font
+        )
         # Vertical lines at month ends
         shapes = []
         
@@ -302,6 +305,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
