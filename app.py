@@ -139,7 +139,7 @@ def build_heatmap(df):
         
         # --- horizontal lines between sensors ---
         for y in range(len(sensors)):
-            ax.axhline(y=y, color='lightgray', linestyle='--', linewidth=0.5)
+            ax.axhline(y=y, color='lightgray', linestyle='--', linewidth=1)
 
         
         # x-axis month names centered between lines
@@ -197,6 +197,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
