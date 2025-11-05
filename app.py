@@ -110,11 +110,12 @@ def build_heatmap(df):
 
         ax.set_xlim(0, len(year_days))
         ax.set_ylim(0, len(sensors))
-        ax.set_yticks(range(len(sensors)))
+        ax.set_yticks([i + 0.5 for i in range(len(sensors))])
+        ax.set_yticklabels(sensors)
         ax.set_yticklabels(heatmap_data.index)
         ax.set_title(f"Sensor activity - {yr}")
 
-        # --- vertical lines for month boundaries ---
+        
         # --- vertical lines for month boundaries ---
         import calendar  # make sure this import is at the top of the file
         
@@ -191,6 +192,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
