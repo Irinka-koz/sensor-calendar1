@@ -41,24 +41,27 @@ def build_heatmap(df):
         st.warning("No data yet.")
         return
 
+    # Ensure date is datetime
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
 
-    # Define range
+    # Define time range
     start_date = pd.to_datetime("2024-01-01")
     end_date = pd.to_datetime(date.today())
+
+    # Create a complete date range
     all_dates = pd.date_range(start=start_date, end=end_date)
 
-    # Define color logic
+    # Prepare color codes
     color_map = {
         "active": "green",
         "battery": "red",
         "card": "orange",
-        "both": "purple",
-        "none": "white"
+        "both": "purple"
     }
 
+    # Initialize result table
     sensors = df["Sensor_ID"].unique()
-    pivot = pd.DataFrame(index=sensors, columns=all_dates, data="none")
+    pivot = pd.DataFrame(index=sensors, columns=all_dates, data=None)
 
     for sensor in sensors:
         s_df = df[df["Sensor_ID"] == sensor].sort_values("date")
@@ -75,10 +78,11 @@ def build_heatmap(df):
                 active = False
                 start_time = None
 
+        # If still active (no end)
         if active and start_time is not None:
             active_periods.append((start_time, end_date))
 
-        # Fill active (green)
+        # Mark active (green)
         for s, e in active_periods:
             mask = (pivot.columns >= s) & (pivot.columns <= e)
             pivot.loc[sensor, mask] = "active"
@@ -99,23 +103,14 @@ def build_heatmap(df):
                     else:
                         pivot.loc[sensor, d] = "card"
 
-    # Map to numbers for plotting
-    color_to_num = {
-        "white": 0,
-        "green": 1,
-        "red": 2,
-        "orange": 3,
-        "purple": 4
-    }
+    # Map to colors
+    color_pivot = pivot.replace(color_map).fillna("white")
 
-    num_pivot = pivot.replace({
-        "none": "white",
-        "active": "green",
-        "battery": "red",
-        "card": "orange",
-        "both": "purple"
-    }).replace(color_to_num).astype(float)
+    # Convert to numerical values for heatmap display
+    color_to_num = {v: i for i, v in enumerate(color_map.values())}
+    num_pivot = color_pivot.replace(color_to_num)
 
+    # Custom color palette
     palette = sns.color_palette(["white", "green", "red", "orange", "purple"])
 
     fig, ax = plt.subplots(figsize=(12, 4))
@@ -125,10 +120,7 @@ def build_heatmap(df):
     ax.set_xlabel("Date")
     ax.set_ylabel("Sensor ID")
     ax.set_xticks(range(0, len(all_dates), max(1, len(all_dates)//10)))
-    ax.set_xticklabels(
-        [d.strftime("%d-%b") for d in all_dates[::max(1, len(all_dates)//10)]],
-        rotation=45, ha='right'
-    )
+    ax.set_xticklabels([d.strftime("%d-%b") for d in all_dates[::max(1, len(all_dates)//10)]], rotation=45, ha='right')
 
     st.pyplot(fig)
 
@@ -172,6 +164,7 @@ if st.button("Add Record"):
 
 st.header("Sensor Activity Heatmap")
 build_heatmap(df)
+
 
 
 
