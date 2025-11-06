@@ -291,6 +291,18 @@ with col_right:
     ])
     st.dataframe(sensor_info_table, use_container_width=True, height=150)
 
+
+# Initialize session_state keys if they don't exist yet
+if "sensor" not in st.session_state:
+    st.session_state.sensor = ""
+if "mode_select" not in st.session_state:
+    st.session_state.mode_select = ""
+if "date_input" not in st.session_state:
+    st.session_state.date_input = date.today()
+if "note_input" not in st.session_state:
+    st.session_state.note_input = ""
+
+
 # --- Left column: input form ---
 with col_left:
     st.subheader("Add a New Record")
@@ -361,6 +373,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
