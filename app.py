@@ -353,7 +353,7 @@ with col_left:
 
     st.button("Add Record", use_container_width=True, on_click=add_record)
 
-        df = load_sheet()  # reload for heatmap
+        #df = load_sheet()  # reload for heatmap
 
 # =============================
 # BOTTOM: FULL-WIDTH HEATMAP
@@ -361,6 +361,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
