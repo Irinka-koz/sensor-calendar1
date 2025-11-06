@@ -52,7 +52,37 @@ def build_heatmap(df):
         st.warning("No data yet.")
         return
 
-    import calendar
+        # --- Filter controls ---
+    st.subheader("🔍 Filter data")
+
+    # Make sure the new columns exist
+    if 'area' not in df.columns:
+        df['area'] = 'Unknown'
+    if 'type' not in df.columns:
+        df['type'] = 'Unknown'
+
+    # Get unique values for filters
+    all_areas = sorted(df['area'].dropna().unique().tolist())
+    all_types = sorted(df['type'].dropna().unique().tolist())
+    all_sensors = sorted(df['Sensor_ID'].dropna().unique().tolist())
+
+    # Create multiselect widgets
+    col1, col2, col3 = st.columns(3)
+    selected_areas = col1.multiselect("Select Area(s)", all_areas, default=all_areas)
+    selected_types = col2.multiselect("Select Type(s)", all_types, default=all_types)
+    selected_sensors = col3.multiselect("Select Sensor ID(s)", all_sensors, default=all_sensors)
+
+    # --- Apply filters ---
+    filtered_df = df[
+        df['area'].isin(selected_areas) &
+        df['type'].isin(selected_types) &
+        df['Sensor_ID'].isin(selected_sensors)
+    ]
+
+    if filtered_df.empty:
+        st.warning("No data found for the selected filters.")
+        return
+
 
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
     start_date = pd.Timestamp("2024-01-01")
@@ -311,6 +341,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
