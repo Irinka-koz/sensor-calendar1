@@ -69,14 +69,14 @@ def build_heatmap(df):
     # Create multiselect widgets
     col1, col2, col3 = st.columns(3)
     selected_areas = col1.multiselect("Select Area(s)", all_areas, default=all_areas)
-    selected_types = col2.multiselect("Select Type(s)", all_types, default=all_types)
     selected_sensors = col3.multiselect("Select Sensor ID(s)", all_sensors, default=all_sensors)
+    selected_types = col2.multiselect("Select Type(s)", all_types, default=all_types)
 
     # --- Apply filters ---
     filtered_df = df[
         df['Area'].isin(selected_areas) &
-        df['Type'].isin(selected_types) &
-        df['Sensor_ID'].isin(selected_sensors)
+        df['Sensor_ID'].isin(selected_sensors) &
+        df['Type'].isin(selected_types)
     ]
 
     if filtered_df.empty:
@@ -341,6 +341,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
