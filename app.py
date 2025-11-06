@@ -294,30 +294,35 @@ with col_right:
 # --- Left column: input form ---
 with col_left:
     st.subheader("Add a New Record")
-    
-    sensor_options = [""] + list(sensor_info.keys())
+
     st.write("Select Sensor")
+
+    sensor_options = [""] + list(sensor_info.keys())
     sensor_id = st.selectbox(
-        "Sensor ID", 
-        sensor_options, 
-        key="sensor", 
+        "Sensor ID",
+        sensor_options,
+        key="sensor",
         label_visibility="collapsed"
     )
+
     st.write("Select Event")
+    mode_options = ["", "start", "end", "change battery", "change card"]
     mode = st.selectbox(
-        "Mode", 
-        ["", "start", "end", "change battery", "change card"], 
+        "Mode",
+        mode_options,
+        key="mode_select",
         label_visibility="collapsed"
     )
-    
+
     selected_date = st.date_input(
-        "Select Date", 
-        value=date.today(), 
-        format="DD/MM/YYYY", 
-        max_value=date.today()
+        "Select Date",
+        value=date.today(),
+        format="DD/MM/YYYY",
+        max_value=date.today(),
+        key="date_input"
     )
-    # Note input
-    note = st.text_input("Note (optional)")
+
+    note = st.text_input("Note (optional)", key="note_input")
 
     if st.button("Add Record", use_container_width=True):
         if sensor_id == "":
@@ -341,6 +346,12 @@ with col_left:
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
             save_sheet(df)
             st.success("✅ Record added successfully!")
+
+            # ✅ Reset all input fields
+            st.session_state.sensor = ""
+            st.session_state.mode_select = ""
+            st.session_state.date_input = date.today()
+            st.session_state.note_input = ""
             #st.experimental_rerun()
             df = load_sheet()  # reload for heatmap
 
@@ -350,6 +361,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
