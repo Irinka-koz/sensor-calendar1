@@ -56,10 +56,10 @@ def build_heatmap(df):
     st.subheader("🔍 Filter data")
 
     # Make sure the new columns exist
-    if 'area' not in df.columns:
-        df['area'] = 'Unknown'
-    if 'type' not in df.columns:
-        df['type'] = 'Unknown'
+    if 'Area' not in df.columns:
+        df['Area'] = 'Unknown'
+    if 'Type' not in df.columns:
+        df['Type'] = 'Unknown'
 
     # Get unique values for filters
     all_areas = sorted(df['Area'].dropna().unique().tolist())
@@ -84,12 +84,12 @@ def build_heatmap(df):
         return
 
 
-    df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    filtered_df['date'] = pd.to_datetime(filtered_df['date'], errors='coerce')
     start_date = pd.Timestamp("2024-01-01")
     end_date = pd.Timestamp(date.today())
     all_days = pd.date_range(start=start_date, end=end_date)
 
-    sensors = df['Sensor_ID'].dropna().unique()
+    sensors = filtered_df['Sensor_ID'].dropna().unique()
     heatmap_data = pd.DataFrame(0, index=sensors, columns=all_days)
     hover_data = pd.DataFrame("", index=sensors, columns=all_days)
 
@@ -104,7 +104,7 @@ def build_heatmap(df):
 
     # Fill heatmap_data and hover_data
     for sensor in sensors:
-        sdata = df[df["Sensor_ID"] == sensor].sort_values("date")
+        sdata = filtered_df[filtered_df["Sensor_ID"] == sensor].sort_values("date")
         active = False
         start_active = None
         day_notes = {day: "" for day in all_days}
@@ -341,6 +341,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
