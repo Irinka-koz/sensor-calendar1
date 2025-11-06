@@ -301,6 +301,8 @@ if "date_input" not in st.session_state:
     st.session_state.date_input = date.today()
 if "note_input" not in st.session_state:
     st.session_state.note_input = ""
+if "record_message" not in st.session_state:  # <-- new key to store messages
+    st.session_state.record_message = None
 
 # --- Define the reset function ---
 def reset_form():
@@ -323,13 +325,23 @@ with col_left:
 
     note = st.text_input("Note (optional)", key="note_input")
 
+
+    # Show previous message if exists
+    if st.session_state.record_message:
+        if st.session_state.record_message_type == "success":
+            message_placeholder.success(st.session_state.record_message)
+        elif st.session_state.record_message_type == "warning":
+            message_placeholder.warning(st.session_state.record_message)
+
     # Use on_click callback for button
     def add_record():
         if sensor_id == "":
-            message_placeholder.warning("⚠️ Please select a Sensor ID before adding a record.")
+            st.session_state.record_message = "⚠️ Please select a Sensor ID before adding a record."
+            st.session_state.record_message_type = "warning"
             return
         elif mode == "":
-            message_placeholder.warning("⚠️ Please select an Event.")
+            st.session_state.record_message = "⚠️ Please select an Event."
+            st.session_state.record_message_type = "warning"
             return
         
         location = sensor_info[sensor_id]["Location"]
@@ -347,15 +359,18 @@ with col_left:
         }
         df = pd.concat([load_sheet(), pd.DataFrame([new_row])], ignore_index=True)
         save_sheet(df)
-        message_placeholder.success("✅ Record added successfully!")
 
+        # Set success message in session_state
+        st.session_state.record_message = "✅ Record added successfully!"
+        st.session_state.record_message_type = "success"
+
+        # Placeholder for messages
+        message_placeholder = st.empty()
+        
         reset_form()  # reset widgets after success
 
     st.button("Add Record", use_container_width=True, on_click=add_record)
 
-    # Placeholder for messages
-    message_placeholder = st.empty()
-        #df = load_sheet()  # reload for heatmap
 
 # =============================
 # BOTTOM: FULL-WIDTH HEATMAP
@@ -363,6 +378,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
