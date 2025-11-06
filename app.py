@@ -319,7 +319,7 @@ with col_left:
     mode_options = ["", "start", "end", "change battery", "change card"]
     mode = st.selectbox("Mode", mode_options, key="mode_select", label_visibility="collapsed")
 
-    selected_date = st.date_input("Select Date", value=date.today(), max_value=date.today(), key="date_input")
+    selected_date = st.date_input("Select Date", max_value=date.today(), key="date_input")
 
     note = st.text_input("Note (optional)", key="note_input")
 
@@ -361,6 +361,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
