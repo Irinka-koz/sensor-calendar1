@@ -327,22 +327,22 @@ with col_left:
         else:
             location = sensor_info[sensor_id]["Location"]
             stype = sensor_info[sensor_id]["Type"]
-            Area1 = sensor_info[sensor_id]["Area"]
+            Area = sensor_info[sensor_id]["Area"]
 
-        new_row = {
-            "Sensor_ID": sensor_id,
-            "Area": Area1,
-            "Location": location,
-            "Type": stype,
-            "mode": mode,
-            "date": pd.to_datetime(selected_date),
-            "note": note
-        }
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-        save_sheet(df)
-        st.success("✅ Record added successfully!")
-        #st.experimental_rerun()
-        df = load_sheet()  # reload for heatmap
+            new_row = {
+                "Sensor_ID": sensor_id,
+                "Area": Area,
+                "Location": location,
+                "Type": stype,
+                "mode": mode,
+                "date": pd.to_datetime(selected_date),
+                "note": note
+            }
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            save_sheet(df)
+            st.success("✅ Record added successfully!")
+            #st.experimental_rerun()
+            df = load_sheet()  # reload for heatmap
 
 # =============================
 # BOTTOM: FULL-WIDTH HEATMAP
@@ -350,6 +350,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
