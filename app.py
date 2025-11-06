@@ -325,6 +325,7 @@ with col_left:
 
         new_row = {
             "Sensor_ID": sensor_id,
+            "Area": Area,
             "Location": location,
             "Type": stype,
             "mode": mode,
@@ -342,6 +343,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
