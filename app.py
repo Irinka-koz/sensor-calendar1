@@ -364,8 +364,8 @@ with col_left:
         st.session_state.record_message = "✅ Record added successfully!"
         st.session_state.record_message_type = "success"
 
-        # Placeholder for messages
-        message_placeholder = st.empty()
+    # Placeholder for messages
+    message_placeholder = st.empty()
         
         reset_form()  # reset widgets after success
 
@@ -378,6 +378,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
