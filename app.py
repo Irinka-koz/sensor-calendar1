@@ -63,14 +63,15 @@ def build_heatmap(df):
 
     # Get unique values for filters
     all_areas = sorted(df['Area'].dropna().unique().tolist())
-    all_types = sorted(df['Type'].dropna().unique().tolist())
     all_sensors = sorted(df['Sensor_ID'].dropna().unique().tolist())
+    all_types = sorted(df['Type'].dropna().unique().tolist())
+    
 
     # Create multiselect widgets
     col1, col2, col3 = st.columns(3)
     selected_areas = col1.multiselect("Select Area(s)", all_areas, default=all_areas)
-    selected_sensors = col3.multiselect("Select Sensor ID(s)", all_sensors, default=all_sensors)
-    selected_types = col2.multiselect("Select Type(s)", all_types, default=all_types)
+    selected_sensors = col2.multiselect("Select Sensor ID(s)", all_sensors, default=all_sensors)
+    selected_types = col3.multiselect("Select Type(s)", all_types, default=all_types)
 
     # --- Apply filters ---
     filtered_df = df[
@@ -341,6 +342,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
