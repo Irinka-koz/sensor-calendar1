@@ -294,7 +294,8 @@ with col_right:
 # --- Left column: input form ---
 with col_left:
     st.subheader("Add a New Record")
-
+    
+    sensor_options = [""] + list(sensor_info.keys())
     st.write("Select Sensor")
     sensor_id = st.selectbox(
         "Sensor ID", 
@@ -349,6 +350,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
