@@ -336,8 +336,8 @@ with col_left:
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         save_sheet(df)
         st.success("✅ Record added successfully!")
-        st.experimental_rerun()
-        #df = load_sheet()  # reload for heatmap
+        #st.experimental_rerun()
+        df = load_sheet()  # reload for heatmap
 
 # =============================
 # BOTTOM: FULL-WIDTH HEATMAP
@@ -345,6 +345,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
