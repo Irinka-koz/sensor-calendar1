@@ -286,7 +286,7 @@ col_left, col_center, col_right = st.columns([1,1,2])
 with col_right:
     st.subheader("Sensors Info")
     sensor_info_table = pd.DataFrame([
-        {"Sensor ID": k, "Area":v["Area"}, "Location": v["Location"], "Type": v["Type"]}
+        {"Sensor ID": k, "Area":v["Area"], "Location": v["Location"], "Type": v["Type"]}
         for k, v in sensor_info.items()
     ])
     st.dataframe(sensor_info_table, use_container_width=True, height=150)
@@ -342,6 +342,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
