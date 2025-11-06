@@ -323,9 +323,6 @@ with col_left:
 
     note = st.text_input("Note (optional)", key="note_input")
 
-    # Placeholder for messages
-    message_placeholder = st.empty()
-
     # Use on_click callback for button
     def add_record():
         if sensor_id == "":
@@ -356,7 +353,8 @@ with col_left:
 
     st.button("Add Record", use_container_width=True, on_click=add_record)
 
-
+    # Placeholder for messages
+    message_placeholder = st.empty()
         #df = load_sheet()  # reload for heatmap
 
 # =============================
@@ -365,6 +363,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
