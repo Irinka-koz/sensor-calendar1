@@ -323,13 +323,16 @@ with col_left:
 
     note = st.text_input("Note (optional)", key="note_input")
 
+    # Placeholder for messages
+    message_placeholder = st.empty()
+
     # Use on_click callback for button
     def add_record():
         if sensor_id == "":
-            st.warning("⚠️ Please select a Sensor ID before adding a record.")
+            message_placeholder.warning("⚠️ Please select a Sensor ID before adding a record.")
             return
         elif mode == "":
-            st.warning("⚠️ Please select an Event.")
+            message_placeholder.warning("⚠️ Please select an Event.")
             return
         
         location = sensor_info[sensor_id]["Location"]
@@ -347,11 +350,12 @@ with col_left:
         }
         df = pd.concat([load_sheet(), pd.DataFrame([new_row])], ignore_index=True)
         save_sheet(df)
-        st.success("✅ Record added successfully!")
+        message_placeholder.success("✅ Record added successfully!")
 
         reset_form()  # reset widgets after success
 
     st.button("Add Record", use_container_width=True, on_click=add_record)
+
 
         #df = load_sheet()  # reload for heatmap
 
@@ -361,6 +365,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
