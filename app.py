@@ -292,7 +292,7 @@ with col_right:
     st.dataframe(sensor_info_table, use_container_width=True, height=150)
 
 
-# Initialize session_state keys if they don't exist yet
+# --- Initialize session_state keys at the very top ---
 if "sensor" not in st.session_state:
     st.session_state.sensor = ""
 if "mode_select" not in st.session_state:
@@ -302,69 +302,57 @@ if "date_input" not in st.session_state:
 if "note_input" not in st.session_state:
     st.session_state.note_input = ""
 
+# --- Define the reset function ---
+def reset_form():
+    st.session_state.sensor = ""
+    st.session_state.mode_select = ""
+    st.session_state.date_input = date.today()
+    st.session_state.note_input = ""
 
 # --- Left column: input form ---
 with col_left:
     st.subheader("Add a New Record")
 
-    st.write("Select Sensor")
-
     sensor_options = [""] + list(sensor_info.keys())
-    sensor_id = st.selectbox(
-        "Sensor ID",
-        sensor_options,
-        key="sensor",
-        label_visibility="collapsed"
-    )
+    sensor_id = st.selectbox("Sensor ID", sensor_options, key="sensor", label_visibility="collapsed")
 
-    st.write("Select Event")
     mode_options = ["", "start", "end", "change battery", "change card"]
-    mode = st.selectbox(
-        "Mode",
-        mode_options,
-        key="mode_select",
-        label_visibility="collapsed"
-    )
+    mode = st.selectbox("Mode", mode_options, key="mode_select", label_visibility="collapsed")
 
-    selected_date = st.date_input(
-        "Select Date",
-        value=date.today(),
-        format="DD/MM/YYYY",
-        max_value=date.today(),
-        key="date_input"
-    )
+    selected_date = st.date_input("Select Date", value=date.today(), max_value=date.today(), key="date_input")
 
     note = st.text_input("Note (optional)", key="note_input")
 
-    if st.button("Add Record", use_container_width=True):
+    # Use on_click callback for button
+    def add_record():
         if sensor_id == "":
             st.warning("⚠️ Please select a Sensor ID before adding a record.")
+            return
         elif mode == "":
             st.warning("⚠️ Please select an Event.")
-        else:
-            location = sensor_info[sensor_id]["Location"]
-            stype = sensor_info[sensor_id]["Type"]
-            Area = sensor_info[sensor_id]["Area"]
+            return
+        
+        location = sensor_info[sensor_id]["Location"]
+        stype = sensor_info[sensor_id]["Type"]
+        Area = sensor_info[sensor_id]["Area"]
 
-            new_row = {
-                "Sensor_ID": sensor_id,
-                "Area": Area,
-                "Location": location,
-                "Type": stype,
-                "mode": mode,
-                "date": pd.to_datetime(selected_date),
-                "note": note
-            }
-            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-            save_sheet(df)
-            st.success("✅ Record added successfully!")
+        new_row = {
+            "Sensor_ID": sensor_id,
+            "Area": Area,
+            "Location": location,
+            "Type": stype,
+            "mode": mode,
+            "date": pd.to_datetime(selected_date),
+            "note": note
+        }
+        df = pd.concat([load_sheet(), pd.DataFrame([new_row])], ignore_index=True)
+        save_sheet(df)
+        st.success("✅ Record added successfully!")
 
-            # ✅ Reset all input fields
-            st.session_state.sensor = ""
-            st.session_state.mode_select = ""
-            st.session_state.date_input = date.today()
-            st.session_state.note_input = ""
-            #st.experimental_rerun()
+        reset_form()  # reset widgets after success
+
+    st.button("Add Record", use_container_width=True, on_click=add_record)
+
             df = load_sheet()  # reload for heatmap
 
 # =============================
@@ -373,6 +361,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
