@@ -298,7 +298,7 @@ with col_left:
     st.write("Select Sensor")
     sensor_id = st.selectbox(
         "Sensor ID", 
-        list(sensor_info.keys()), 
+        sensor_options, 
         key="sensor", 
         label_visibility="collapsed"
     )
@@ -319,10 +319,14 @@ with col_left:
     note = st.text_input("Note (optional)")
 
     if st.button("Add Record", use_container_width=True):
-        # get location and type from sensor_info
-        location = sensor_info[sensor_id]["Location"]
-        stype = sensor_info[sensor_id]["Type"]
-        Area = sensor_info[sensor_id]["Area"]
+        if sensor_id == "":
+            st.warning("⚠️ Please select a Sensor ID before adding a record.")
+        elif mode == "":
+            st.warning("⚠️ Please select an Event (mode).")
+        else:
+            location = sensor_info[sensor_id]["Location"]
+            stype = sensor_info[sensor_id]["Type"]
+            Area = sensor_info[sensor_id]["Area"]
 
         new_row = {
             "Sensor_ID": sensor_id,
@@ -345,6 +349,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
