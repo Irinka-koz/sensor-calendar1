@@ -325,6 +325,8 @@ with col_left:
 
     note = st.text_input("Note (optional)", key="note_input")
 
+    # Placeholder for messages (must be defined before using)
+    message_placeholder = st.empty()
 
     # Show previous message if exists
     if st.session_state.record_message:
@@ -364,12 +366,11 @@ with col_left:
         st.session_state.record_message = "✅ Record added successfully!"
         st.session_state.record_message_type = "success"
 
-    # Placeholder for messages
-    message_placeholder = st.empty()
-        
-        reset_form()  # reset widgets after success
+        # Reset input widgets
+        reset_form()
 
     st.button("Add Record", use_container_width=True, on_click=add_record)
+
 
 
 # =============================
@@ -378,6 +379,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
