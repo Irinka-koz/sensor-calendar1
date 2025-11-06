@@ -325,43 +325,49 @@ with col_left:
 
     note = st.text_input("Note (optional)", key="note_input")
 
-    # Placeholder will be **directly under the button**
+    # Placeholder for messages (must be defined before using)
     message_placeholder = st.empty()
 
+    # Show previous message if exists
+    if st.session_state.record_message:
+        if st.session_state.record_message_type == "success":
+            message_placeholder.success(st.session_state.record_message)
+        elif st.session_state.record_message_type == "warning":
+            message_placeholder.warning(st.session_state.record_message)
+
+    # Use on_click callback for button
     def add_record():
         if sensor_id == "":
             st.session_state.record_message = "⚠️ Please select a Sensor ID before adding a record."
             st.session_state.record_message_type = "warning"
+            return
         elif mode == "":
             st.session_state.record_message = "⚠️ Please select an Event."
             st.session_state.record_message_type = "warning"
-        else:
-            location = sensor_info[sensor_id]["Location"]
-            stype = sensor_info[sensor_id]["Type"]
-            Area = sensor_info[sensor_id]["Area"]
+            return
+        
+        location = sensor_info[sensor_id]["Location"]
+        stype = sensor_info[sensor_id]["Type"]
+        Area = sensor_info[sensor_id]["Area"]
 
-            new_row = {
-                "Sensor_ID": sensor_id,
-                "Area": Area,
-                "Location": location,
-                "Type": stype,
-                "mode": mode,
-                "date": pd.to_datetime(selected_date),
-                "note": note
-            }
-            df = pd.concat([load_sheet(), pd.DataFrame([new_row])], ignore_index=True)
-            save_sheet(df)
+        new_row = {
+            "Sensor_ID": sensor_id,
+            "Area": Area,
+            "Location": location,
+            "Type": stype,
+            "mode": mode,
+            "date": pd.to_datetime(selected_date),
+            "note": note
+        }
+        df = pd.concat([load_sheet(), pd.DataFrame([new_row])], ignore_index=True)
+        save_sheet(df)
 
-            st.session_state.record_message = "✅ Record added successfully!"
-            st.session_state.record_message_type = "success"
+        # Set success message in session_state
+        st.session_state.record_message = "✅ Record added successfully!"
+        st.session_state.record_message_type = "success"
 
-            reset_form()
-
-        # Update the placeholder **after button click**
-        if st.session_state.record_message_type == "success":
-            message_placeholder.success(st.session_state.record_message)
-        else:
-            message_placeholder.warning(st.session_state.record_message)
+        # Reset input widgets
+        reset_form()
 
     st.button("Add Record", use_container_width=True, on_click=add_record)
 
@@ -373,78 +379,3 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
