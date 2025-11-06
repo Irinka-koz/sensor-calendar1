@@ -323,7 +323,7 @@ with col_left:
         if sensor_id == "":
             st.warning("⚠️ Please select a Sensor ID before adding a record.")
         elif mode == "":
-            st.warning("⚠️ Please select an Event (mode).")
+            st.warning("⚠️ Please select an Event.")
         else:
             location = sensor_info[sensor_id]["Location"]
             stype = sensor_info[sensor_id]["Type"]
@@ -350,6 +350,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
