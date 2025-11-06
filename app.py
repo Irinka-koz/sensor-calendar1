@@ -272,9 +272,9 @@ df = load_sheet()
 
 # Define sensors
 sensor_info = {
-    "S1": {"Location": "Field A", "Type": "PM"},
-    "S2": {"Location": "Field B", "Type": "RH"},
-    "S3": {"Location": "Field A", "Type": "Temp"},
+    "S1": {"Location": "Field A", "Type": "PM", "Area": "Carmel"},
+    "S2": {"Location": "Field B", "Type": "RH", "Area": "Tzinim"},
+    "S3": {"Location": "Field A", "Type": "Temp", "Area": "Tzinim"},
 }
 
 # =============================
@@ -342,6 +342,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
