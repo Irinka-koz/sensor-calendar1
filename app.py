@@ -348,11 +348,7 @@ with st.expander("➕ Add New Sensor"):
                 
                 st.success(f"✅ Sensor **{new_id}** added successfully!")
                 
-                # Clear form inputs
-                st.session_state.new_id_form = ""
-                st.session_state.new_location_form = ""
-                st.session_state.new_area_form = "Carmel"
-                st.session_state.new_type_form = "Camera"
+
                 
                 # Reload sensor_info dictionary so table updates
                 sensor_info = load_sensors()
@@ -427,4 +423,5 @@ if st.session_state.record_message:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
