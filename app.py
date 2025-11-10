@@ -206,8 +206,8 @@ def build_heatmap(df):
             y=sensors,
             text=text,
             hoverinfo='text',
-            colorscale=[[0/4, color_map[0]], [1/4, color_map[1]], [2/4, color_map[2]],
-                        [3/4, color_map[3]], [4/4, color_map[4]], [5/5, color_map[5]]],
+            colorscale=[[0/5, color_map[0]], [1/5, color_map[1]], [2/5, color_map[2]],
+                        [3/5, color_map[3]], [4/5, color_map[4]], [5/5, color_map[5]]],
             zmin=0,
             zmax=5,
             showscale=False  # hide legend
@@ -416,6 +416,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
