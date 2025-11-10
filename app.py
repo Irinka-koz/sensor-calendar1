@@ -102,6 +102,12 @@ def build_heatmap(df):
     heatmap_data = pd.DataFrame(0, index=sensors, columns=all_days)
     hover_data = pd.DataFrame("", index=sensors, columns=all_days)
 
+    #Map sensor metadata (Location/Type) for easy lookup
+    sensor_metadata = filtered_df.groupby('Sensor_ID').agg({
+        'Location': lambda x: x.iloc[0], # Get the first non-null location
+        'Type': lambda x: x.iloc[0]       # Get the first non-null type
+    }).to_dict(orient='index')
+
     # Colors mapping
     color_map = {
         0: '#FFFFFF',  # Inactive
@@ -169,17 +175,23 @@ def build_heatmap(df):
             val = heatmap_data.loc[sensor, day]
             status = {0: "Inactive", 1: "Active", 2: "Change Battery",
                       3: "Change Card", 4: "Battery & Card Change", 5:"Change Location"}[val]
-    
+            
+            # 💡 Access Location and Type from the new metadata dict
+            metadata = sensor_metadata.get(sensor, {})
+            location = metadata.get('Location', 'N/A')
+            sensor_type = metadata.get('Type', 'N/A')
+            
+            # --- UPDATED HOVER TEXT ---
             text = f"<b>Date:</b> {day.strftime('%Y-%m-%d')}<br>" \
-                   f"<b>Sensor:</b> {sensor}<br>" \
+                   f"<b>Location:</b> {location}<br>" \
+                   f"<b>Type:</b> {sensor_type}<br>" \
                    f"<b>Event:</b> {status}<br>"
-    
+            
             # Only show Notes if there is something
             if day_notes[day]:
                 text += f"<b>Notes:</b>{day_notes[day]}"
-    
+            
             hover_data.loc[sensor, day] = text
-
 
     # Multi-year heatmaps
     years = sorted(set(all_days.year))
@@ -404,6 +416,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
