@@ -299,7 +299,7 @@ for key in [
 # ADD NEW SENSOR (TOP)
 # ----------------------------
 with st.expander("➕ Add New Sensor"):
-    with st.form(key="new_sensor_form"):
+    with st.form(key="new_sensor_form", clear_on_submit=True):
         new_id = st.text_input("Sensor ID", key="new_id_form")
         new_area = st.selectbox("Area", ["","Carmel", "Tzinim"], key="new_area_form")
         new_location = st.text_input("Location", key="new_location_form")
@@ -342,7 +342,7 @@ col_left, col_right = st.columns([1, 2])
 
 with col_left:
     st.subheader("Add a New Record")
-    with st.form(key="new_record_form"):
+    with st.form(key="new_record_form", clear_on_submit=True):
         sensor_options = [""] + list(sensor_info.keys())
         sensor_id = st.selectbox("Sensor ID", sensor_options, key="sensor_form")
         mode_options = ["", "start", "end", "change battery", "change card"]
@@ -399,6 +399,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
