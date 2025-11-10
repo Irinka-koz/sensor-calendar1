@@ -108,7 +108,8 @@ def build_heatmap(df):
         1: '#00CC66',  # Active
         2: '#FF3333',  # Battery
         3: '#FF9900',  # Card
-        4: '#800080'   # Both
+        4: '#800080',   # Both
+        5: '#3399FF'
     }
 
     # Fill heatmap_data and hover_data
@@ -132,14 +133,16 @@ def build_heatmap(df):
             if mode == "start":
                 start_active = d
                 active = True
-            elif mode == "end" and start_active is not None:
+            elif mode == "End" and start_active is not None:
                 mask = (all_days >= start_active) & (all_days <= d)
                 for day in all_days[mask]:
                     if heatmap_data.loc[sensor, day] == 0:
                         heatmap_data.loc[sensor, day] = 1
                 active = False
                 start_active = None
-            elif mode in ["change battery", "change card"]:
+            elif mode == "change location":
+                heatmap_data.loc[sensor, d] = 5
+            elif mode in ["Change Battery", "Change Card"]:
                 if d in heatmap_data.columns:
                     val = heatmap_data.loc[sensor, d]
                     if mode == "change battery":
@@ -345,7 +348,7 @@ with col_left:
     with st.form(key="new_record_form", clear_on_submit=True):
         sensor_options = [""] + list(sensor_info.keys())
         sensor_id = st.selectbox("Sensor ID", sensor_options, key="sensor_form")
-        mode_options = ["", "start", "end", "change battery", "change card"]
+        mode_options = ["", "Start", "End", "Change Location", "Change Battery", "Change Card"]
         mode = st.selectbox("Mode", mode_options, key="mode_select_form")
         selected_date = st.date_input("Select Date", max_value=date.today(), format="DD/MM/YYYY", key="date_input_form")
         note = st.text_input("Note (optional)", key="note_input_form")
@@ -399,6 +402,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
