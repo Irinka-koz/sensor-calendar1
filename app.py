@@ -358,7 +358,7 @@ with st.expander("➕ Add New Sensor"):
 
         # Save
         updated_df = pd.concat([sensor_df, pd.DataFrame([new_sensor])], ignore_index=True)
-        save_sensor_sheet(updated_df)
+        save_sensors(updated_df)
 
         # ✅ Success message
         st.success(f"✅ Sensor **{new_id}** added successfully!")
@@ -442,6 +442,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
