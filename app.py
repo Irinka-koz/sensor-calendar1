@@ -168,7 +168,7 @@ def build_heatmap(df):
         for day in all_days:
             val = heatmap_data.loc[sensor, day]
             status = {0: "Inactive", 1: "Active", 2: "Change Battery",
-                      3: "Change Card", 4: "Battery & Card Change"}[val]
+                      3: "Change Card", 4: "Battery & Card Change", 5:"Change Location"}[val]
     
             text = f"<b>Date:</b> {day.strftime('%Y-%m-%d')}<br>" \
                    f"<b>Sensor:</b> {sensor}<br>" \
@@ -404,6 +404,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
