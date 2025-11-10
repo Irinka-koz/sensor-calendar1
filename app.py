@@ -281,30 +281,16 @@ df = load_sheet()
 # Define sensors
 sensor_info = load_sensors()
 
-# =============================
-# TOP ROW: TABLE + INPUT FORM
-# =============================
+st.set_page_config(layout="wide")
+st.title("Sensor Maintenance Calendar")
 
+# Load data
+df = load_sheet()
+sensor_info = load_sensors()
 
-col_left, col_center, col_right = st.columns([1,1,2])
-
-# --- Right column: Sensor info table ---
-with col_right:
-    st.subheader("Sensors Info")
-    sensor_info_table = pd.DataFrame([
-        {"Sensor ID": k, "Area":v["Area"], "Location": v["Location"], "Type": v["Type"]}
-        for k, v in sensor_info.items()
-    ])
-    st.dataframe(sensor_info_table, use_container_width=True, height=150)
-
-if "record_message" not in st.session_state:
-    st.session_state.record_message = None
-if "record_message_type" not in st.session_state:
-    st.session_state.record_message_type = None
-
-# =============================
-# CENTER: ADD NEW SENSOR
-# =============================
+# ----------------------------
+# ADD NEW SENSOR (TOP)
+# ----------------------------
 with st.expander("➕ Add New Sensor"):
     with st.form(key="new_sensor_form"):
         st.write("Add a new sensor to the system")
@@ -327,21 +313,21 @@ with st.expander("➕ Add New Sensor"):
                     "Location": new_location,
                     "Type": new_type
                 }
-                # Save new sensor to Google Sheet
+                # Save to Google Sheets
                 sensor_df = pd.DataFrame.from_dict(load_sensors(), orient="index").reset_index().rename(columns={"index": "Sensor_ID"})
                 updated_df = pd.concat([sensor_df, pd.DataFrame([new_sensor])], ignore_index=True)
                 save_sensors(updated_df)
-                
                 st.success(f"✅ Sensor **{new_id}** added successfully!")
                 
-
-                
-                # Reload sensor_info dictionary so table updates
+                # Reload sensor_info so table updates
                 sensor_info = load_sensors()
 
-# =============================
-# LEFT: ADD NEW RECORD
-# =============================
+# ----------------------------
+# TABLE + ADD RECORD (ROW)
+# ----------------------------
+col_left, col_right = st.columns([1, 2])
+
+# --- Left column: Add Record ---
 with col_left:
     st.subheader("Add a New Record")
     
@@ -357,11 +343,9 @@ with col_left:
         
         if submitted:
             if sensor_id == "":
-                st.session_state.record_message = "⚠️ Please select a Sensor ID before adding a record."
-                st.session_state.record_message_type = "warning"
+                st.warning("⚠️ Please select a Sensor ID before adding a record.")
             elif mode == "":
-                st.session_state.record_message = "⚠️ Please select an Event."
-                st.session_state.record_message_type = "warning"
+                st.warning("⚠️ Please select an Event.")
             else:
                 # Save record to Google Sheet
                 location = sensor_info[sensor_id]["Location"]
@@ -379,30 +363,26 @@ with col_left:
                 }
                 df = pd.concat([load_sheet(), pd.DataFrame([new_row])], ignore_index=True)
                 save_sheet(df)
+                st.success("✅ Record added successfully!")
+                df = load_sheet()  # Reload for heatmap
 
-                st.session_state.record_message = "✅ Record added successfully!"
-                st.session_state.record_message_type = "success"
+# --- Right column: Sensor Table ---
+with col_right:
+    st.subheader("Sensors Info")
+    sensor_info_table = pd.DataFrame([
+        {"Sensor ID": k, "Area":v["Area"], "Location": v["Location"], "Type": v["Type"]}
+        for k, v in sensor_info.items()
+    ])
+    st.dataframe(sensor_info_table, use_container_width=True, height=150)
 
-                # Reload data for heatmap
-                df = load_sheet()
-
-# =============================
-# Show message (outside forms)
-# =============================
-if st.session_state.record_message:
-    if st.session_state.record_message_type == "success":
-        st.success(st.session_state.record_message)
-    elif st.session_state.record_message_type == "warning":
-        st.warning(st.session_state.record_message)
-    st.session_state.record_message = None
-    st.session_state.record_message_type = None
-
-# =============================
-# BOTTOM: HEATMAP
-# =============================
+# ----------------------------
+# HEATMAP
+# ----------------------------
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
+
 
 
 
