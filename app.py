@@ -32,12 +32,14 @@ def load_sheet():
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
     return df
     
-def save_sensors(df_to_save):
-    """Save updated sensor list to Google Sheets (SENSOR_SHEET_ID)"""
-    sensor_sheet = client.open_by_key(SENSOR_SHEET_ID).worksheet("Sheet1")
-    set_with_dataframe(sensor_sheet, df_to_save)
-    # Invalidate sensor cache
-    load_sensors.clear()
+def load_sensors():
+    """Load sensor list from Google Sheets"""
+    sheet = client.open_by_key(SENSOR_SHEET_ID).worksheet("Sheet1") # <-- CHANGE IS HERE
+    data = sheet.get_all_records()
+    df = pd.DataFrame(data)
+    if not df.empty:
+        return df.set_index("Sensor_ID").to_dict(orient="index")
+    return {}
 # -------------------------
 # Save Sheet
 # -------------------------
@@ -429,6 +431,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
