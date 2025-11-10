@@ -379,8 +379,7 @@ with col_left:
 
             st.session_state.record_message = "✅ Record added successfully!"
             st.session_state.record_message_type = "success"
-            st.session_state.date_input_form = date.today()
-
+           
 
             # Reload data for heatmap
             df = load_sheet()
@@ -400,6 +399,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
