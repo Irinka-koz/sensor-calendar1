@@ -294,26 +294,10 @@ with col_right:
         for k, v in sensor_info.items()
     ])
     st.dataframe(sensor_info_table, use_container_width=True, height=150)
-
-
-# --- Initialize session_state keys at the very top ---
-if "sensor" not in st.session_state:
-    st.session_state.sensor = ""
-if "mode_select" not in st.session_state:
-    st.session_state.mode_select = ""
-if "date_input" not in st.session_state:
-    st.session_state.date_input = date.today()
-if "note_input" not in st.session_state:
-    st.session_state.note_input = ""
-if "record_message" not in st.session_state:  # <-- new key to store messages
+    
+if "record_message" not in st.session_state:
     st.session_state.record_message = None
 
-# --- Define the reset function ---
-def reset_form():
-    st.session_state.sensor = ""
-    st.session_state.mode_select = ""
-    st.session_state.date_input = date.today()
-    st.session_state.note_input = ""
 
 # --- Center column: input form ---
 with st.expander("➕ Add New Sensor"):
@@ -444,6 +428,7 @@ if st.session_state.record_message:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
