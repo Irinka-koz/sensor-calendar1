@@ -34,7 +34,7 @@ def load_sheet():
     
 def load_sensors():
     """Load sensor list from Google Sheets"""
-    sheet = client.open_by_key(SENSOR_SHEET_ID).sheet1
+    sheet = client.open_by_key(SENSOR_SHEET_ID).worksheet("Sheet1") # <-- CHANGE IS HERE
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
     if not df.empty:
@@ -442,5 +442,6 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
