@@ -301,9 +301,9 @@ for key in [
 with st.expander("➕ Add New Sensor"):
     with st.form(key="new_sensor_form"):
         new_id = st.text_input("Sensor ID", key="new_id_form")
-        new_area = st.selectbox("Area", ["Carmel", "Tzinim"], key="new_area_form")
+        new_area = st.selectbox("Area", ["","Carmel", "Tzinim"], key="new_area_form")
         new_location = st.text_input("Location", key="new_location_form")
-        new_type = st.selectbox("Type", ["Camera", "IR", "BT", "US"], key="new_type_form")
+        new_type = st.selectbox("Type", ["", "Camera", "IR", "BT", "US"], key="new_type_form")
         
         submitted_sensor = st.form_submit_button("Add Sensor", use_container_width=True)
 
@@ -313,6 +313,13 @@ with st.expander("➕ Add New Sensor"):
             st.warning("⚠️ Please enter a Sensor ID.")
         elif new_id in sensor_info.keys():
             st.warning("⚠️ This Sensor ID already exists.")
+        elif new_area .strip() == "":   
+            st.warning("⚠️ Please enter Area.")
+        elif new_location .strip() == "":   
+            st.warning("⚠️ Please enter Location.")
+        elif new_type .strip() == "":   
+            st.warning("⚠️ Please enter Type.")
+            
         else:
             new_sensor = {
                 "Sensor_ID": new_id.strip(),
@@ -392,6 +399,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
