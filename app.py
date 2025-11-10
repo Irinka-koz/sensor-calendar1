@@ -17,6 +17,7 @@ from google.oauth2.service_account import Credentials  # <-- this is required
 
 SCOPE = ['https://www.googleapis.com/auth/spreadsheets','https://www.googleapis.com/auth/drive']
 SHEET_ID = "1LcT1Oh6oRdDAhcggbXclkwQRk8MC1ICKyemnjoeULOE"
+SENSOR_SHEET_ID = "1iGLU0_1sUeNLyYQdaZHLgbvIi6FMyartXS5s3sPFJfo"
 
 creds = Credentials.from_service_account_info(dict(st.secrets["google_service_account"]), scopes=SCOPE)
 client = gspread.authorize(creds)
@@ -30,13 +31,30 @@ def load_sheet():
     df = df.dropna(how='all')  # remove empty rows
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
     return df
-
+    
+def load_sensors():
+    """Load sensor list from Google Sheets"""
+    sheet = client.open_by_key(SENSOR_SHEET_ID).sheet1
+    data = sheet.get_all_records()
+    df = pd.DataFrame(data)
+    if not df.empty:
+        return df.set_index("Sensor_ID").to_dict(orient="index")
+    return {}
+    
 # -------------------------
 # Save Sheet
 # -------------------------
 def save_sheet(df):
     set_with_dataframe(sheet, df)
 
+def save_sensors(sensor_info):
+    """Save updated sensor list to Google Sheets"""
+    sheet = client.open_by_key(SENSOR_SHEET_ID).sheet1
+    df = pd.DataFrame.from_dict(sensor_info, orient="index").reset_index()
+    df.rename(columns={"index": "Sensor_ID"}, inplace=True)
+    sheet.clear()
+    sheet.update([df.columns.values.tolist()] + df.values.tolist())
+    
 # -------------------------
 # Heatmap
 # -------------------------
@@ -271,11 +289,7 @@ st.title("Sensor Maintenance Calendar")
 df = load_sheet()
 
 # Define sensors
-sensor_info = {
-    "S1": {"Location": "Field A", "Type": "PM", "Area": "Carmel"},
-    "S2": {"Location": "Field B", "Type": "RH", "Area": "Tzinim"},
-    "S3": {"Location": "Field A", "Type": "Temp", "Area": "Tzinim"},
-}
+sensor_info = load_sensors()
 
 # =============================
 # TOP ROW: TABLE + INPUT FORM
@@ -310,6 +324,54 @@ def reset_form():
     st.session_state.mode_select = ""
     st.session_state.date_input = date.today()
     st.session_state.note_input = ""
+
+# --- Center column: input form ---
+with st.expander("➕ Add New Sensor"):
+    st.write("Add a new sensor to the system")
+
+    # --- Input fields with session_state keys ---
+    new_id = st.text_input("Sensor ID", key="new_id")
+    new_area = st.selectbox("Area", ["Carmel", "Tzinim"], key="new_area")
+    new_location = st.text_input("Location", key="new_location")
+    new_type = st.selectbox("Type", ["Camera", "IR", "BT", "US"], key="new_type")
+
+    # --- Load current sensor list ---
+    sensor_df = load_sensor_sheet()
+
+    def add_sensor():
+        # Validate
+        if new_id.strip() == "":
+            st.warning("⚠️ Please enter a Sensor ID.")
+            return
+        if new_id in sensor_df["Sensor_ID"].values:
+            st.warning("⚠️ This Sensor ID already exists.")
+            return
+
+        # Create new row
+        new_sensor = {
+            "Sensor_ID": new_id.strip(),
+            "Area": new_area,
+            "Location": new_location,
+            "Type": new_type
+        }
+
+        # Save
+        updated_df = pd.concat([sensor_df, pd.DataFrame([new_sensor])], ignore_index=True)
+        save_sensor_sheet(updated_df)
+
+        # ✅ Success message
+        st.success(f"✅ Sensor **{new_id}** added successfully!")
+
+        # --- Clear fields after adding ---
+        st.session_state.new_id = ""
+        st.session_state.new_location = ""
+        st.session_state.new_area = "Carmel"
+        st.session_state.new_type = "Camera"
+
+        # --- Refresh the app so the dropdown updates ---
+        st.rerun()
+
+    st.button("Add Sensor", use_container_width=True, on_click=add_sensor)
 
 # --- Left column: input form ---
 with col_left:
@@ -379,3 +441,4 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
