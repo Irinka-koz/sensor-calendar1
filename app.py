@@ -281,13 +281,6 @@ df = load_sheet()
 # Define sensors
 sensor_info = load_sensors()
 
-st.set_page_config(layout="wide")
-st.title("Sensor Maintenance Calendar")
-
-# Load data
-df = load_sheet()
-sensor_info = load_sensors()
-
 # =============================
 # Initialize session_state keys safely
 # =============================
@@ -412,6 +405,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
