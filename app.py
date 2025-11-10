@@ -32,15 +32,12 @@ def load_sheet():
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
     return df
     
-def load_sensors():
-    """Load sensor list from Google Sheets"""
-    sheet = client.open_by_key(SENSOR_SHEET_ID).worksheet("Sheet1") # <-- CHANGE IS HERE
-    data = sheet.get_all_records()
-    df = pd.DataFrame(data)
-    if not df.empty:
-        return df.set_index("Sensor_ID").to_dict(orient="index")
-    return {}
-    
+def save_sensors(df_to_save):
+    """Save updated sensor list to Google Sheets (SENSOR_SHEET_ID)"""
+    sensor_sheet = client.open_by_key(SENSOR_SHEET_ID).worksheet("Sheet1")
+    set_with_dataframe(sensor_sheet, df_to_save)
+    # Invalidate sensor cache
+    load_sensors.clear()
 # -------------------------
 # Save Sheet
 # -------------------------
@@ -49,19 +46,13 @@ def save_sheet(df):
 
 def save_sensors(sensor_info):
     """Save updated sensor list to Google Sheets"""
-    sheet = client.open_by_key(SENSOR_SHEET_ID).sheet1
-    set_with_dataframe(sheet, df)
+    sheet = client.open_by_key(SENSOR_SHEET_ID).worksheet("Sheet1")
+    set_with_dataframe(sheet, sensor_info)
     
 # -------------------------
 # Heatmap
 # -------------------------
-import plotly.express as px # <--- ADD THIS LINE TO YOUR IMPORTS AT THE TOP
 
-# ... (Other functions and setup remain the same) ...
-
-# -------------------------
-# Heatmap (Plotly Version)
-# -------------------------
 def build_heatmap(df):
     if df.empty:
         st.warning("No data yet.")
@@ -333,15 +324,16 @@ with st.expander("➕ Add New Sensor"):
     new_type = st.selectbox("Type", ["Camera", "IR", "BT", "US"], key="new_type")
 
     # --- Load current sensor list ---
-    sensor_df = pd.DataFrame.from_dict(load_sensors(), orient="index").reset_index().rename(columns={"index": "Sensor_ID"})
-
+    # Convert loaded dict back to DataFrame for easy manipulation
+    sensor_df = pd.DataFrame.from_dict(sensor_info, orient="index").reset_index().rename(columns={"index": "Sensor_ID"})
 
     def add_sensor():
         # Validate
         if new_id.strip() == "":
             st.warning("⚠️ Please enter a Sensor ID.")
             return
-        if new_id in sensor_df["Sensor_ID"].values:
+        # Use current sensor_info keys for validation
+        if new_id in sensor_info.keys(): 
             st.warning("⚠️ This Sensor ID already exists.")
             return
 
@@ -354,20 +346,18 @@ with st.expander("➕ Add New Sensor"):
         }
 
         # Save
+        # Concatenate and save the updated DataFrame
         updated_df = pd.concat([sensor_df, pd.DataFrame([new_sensor])], ignore_index=True)
-        save_sensors(updated_df)
+        save_sensors(updated_df) # Now calls the corrected function
 
-        # ✅ Success message
+        # ✅ Success message and form clear
         st.success(f"✅ Sensor **{new_id}** added successfully!")
-
-        # --- Clear fields after adding ---
         st.session_state.new_id = ""
         st.session_state.new_location = ""
         st.session_state.new_area = "Carmel"
         st.session_state.new_type = "Camera"
-
-        # --- Refresh the app so the dropdown updates ---
-        st.rerun()
+        
+        # st.rerun() is removed as it's often a no-op in callbacks
 
     st.button("Add Sensor", use_container_width=True, on_click=add_sensor)
 
@@ -439,6 +429,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
