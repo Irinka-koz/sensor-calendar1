@@ -336,7 +336,8 @@ with st.expander("➕ Add New Sensor"):
     new_type = st.selectbox("Type", ["Camera", "IR", "BT", "US"], key="new_type")
 
     # --- Load current sensor list ---
-    sensor_df = load_sensor_sheet()
+    sensor_df = pd.DataFrame.from_dict(load_sensors(), orient="index").reset_index().rename(columns={"index": "Sensor_ID"})
+
 
     def add_sensor():
         # Validate
@@ -441,4 +442,5 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
