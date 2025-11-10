@@ -165,24 +165,19 @@ def build_heatmap(df):
 
 
         # Build hover text
-        sensor_row = filtered_df[filtered_df["Sensor_ID"] == sensor].iloc[0]
-        stype = sensor_row["Type"]
-        slocation = sensor_row["Location"]
-        
         for day in all_days:
             val = heatmap_data.loc[sensor, day]
             status = {0: "Inactive", 1: "Active", 2: "Change Battery",
-                      3: "Change Card", 4: "Battery & Card Change", 5: "Change Location"}[val]
-        
+                      3: "Change Card", 4: "Battery & Card Change"}[val]
+    
             text = f"<b>Date:</b> {day.strftime('%Y-%m-%d')}<br>" \
                    f"<b>Sensor:</b> {sensor}<br>" \
-                   f"<b>Type:</b> {stype}<br>" \
-                   f"<b>Location:</b> {slocation}<br>" \
                    f"<b>Event:</b> {status}<br>"
-        
+    
+            # Only show Notes if there is something
             if day_notes[day]:
                 text += f"<b>Notes:</b>{day_notes[day]}"
-        
+    
             hover_data.loc[sensor, day] = text
 
 
@@ -409,6 +404,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
