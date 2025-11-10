@@ -294,35 +294,29 @@ with col_right:
         for k, v in sensor_info.items()
     ])
     st.dataframe(sensor_info_table, use_container_width=True, height=150)
-    
+
 if "record_message" not in st.session_state:
     st.session_state.record_message = None
+if "record_message_type" not in st.session_state:
+    st.session_state.record_message_type = None
 
-
-# --- Center column: input form ---
+# =============================
+# CENTER: ADD NEW SENSOR
+# =============================
 with st.expander("➕ Add New Sensor"):
-    # START FORM HERE
     with st.form(key="new_sensor_form"):
         st.write("Add a new sensor to the system")
-
-        # --- Input fields with session_state keys ---
-        # Note: keys for session state must remain unique
-        new_id = st.text_input("Sensor ID", key="new_id_form") # Added _form suffix
-        new_area = st.selectbox("Area", ["Carmel", "Tzinim"], key="new_area_form") # Added _form suffix
-        new_location = st.text_input("Location", key="new_location_form") # Added _form suffix
-        new_type = st.selectbox("Type", ["Camera", "IR", "BT", "US"], key="new_type_form") # Added _form suffix
+        new_id = st.text_input("Sensor ID", key="new_id_form")
+        new_area = st.selectbox("Area", ["Carmel", "Tzinim"], key="new_area_form")
+        new_location = st.text_input("Location", key="new_location_form")
+        new_type = st.selectbox("Type", ["Camera", "IR", "BT", "US"], key="new_type_form")
         
-        # NOTE: The add_sensor function logic needs to be inside the callback
-        
-        # Use st.form_submit_button instead of st.button
         submitted = st.form_submit_button("Add Sensor", use_container_width=True)
         
         if submitted:
-            # Replicate the logic from the old add_sensor function here
             if new_id.strip() == "":
                 st.warning("⚠️ Please enter a Sensor ID.")
-                # We stop execution here but since we are in a form, Streamlit handles the state
-            elif new_id in sensor_info.keys(): 
+            elif new_id in sensor_info.keys():
                 st.warning("⚠️ This Sensor ID already exists.")
             else:
                 new_sensor = {
@@ -331,56 +325,47 @@ with st.expander("➕ Add New Sensor"):
                     "Location": new_location,
                     "Type": new_type
                 }
-                # Reload df for validation check
+                # Save new sensor to Google Sheet
                 sensor_df = pd.DataFrame.from_dict(load_sensors(), orient="index").reset_index().rename(columns={"index": "Sensor_ID"})
                 updated_df = pd.concat([sensor_df, pd.DataFrame([new_sensor])], ignore_index=True)
                 save_sensors(updated_df)
                 
                 st.success(f"✅ Sensor **{new_id}** added successfully!")
-                # Reset inputs by clearing keys
+                
+                # Clear form inputs
                 st.session_state.new_id_form = ""
                 st.session_state.new_location_form = ""
                 st.session_state.new_area_form = "Carmel"
                 st.session_state.new_type_form = "Camera"
-                st.experimental_rerun() # Use rerun to display the new sensor in the table/dropdowns instantly
-# --- Left column: input form ---
+                
+                # Reload sensor_info dictionary so table updates
+                sensor_info = load_sensors()
+
+# =============================
+# LEFT: ADD NEW RECORD
+# =============================
 with col_left:
     st.subheader("Add a New Record")
     
-    # 💡 START FORM FOR RECORD ENTRY
     with st.form(key="new_record_form"):
-        
         sensor_options = [""] + list(sensor_info.keys())
-        # Note: We must use unique keys for the form widgets
-        sensor_id = st.selectbox("Sensor ID", sensor_options, key="sensor_form", label_visibility="collapsed") 
-
+        sensor_id = st.selectbox("Sensor ID", sensor_options, key="sensor_form")
         mode_options = ["", "start", "end", "change battery", "change card"]
-        mode = st.selectbox("Mode", mode_options, key="mode_select_form", label_visibility="collapsed") 
-
-        selected_date = st.date_input("Select Date", max_value=date.today(), format="DD/MM/YYYY", key="date_input_form") 
-
-        note = st.text_input("Note (optional)", key="note_input_form") 
-
-        # Placeholder for messages (can stay outside the form, but let's manage messages using session state)
-        message_placeholder = st.empty()
+        mode = st.selectbox("Mode", mode_options, key="mode_select_form")
+        selected_date = st.date_input("Select Date", max_value=date.today(), format="DD/MM/YYYY", key="date_input_form")
+        note = st.text_input("Note (optional)", key="note_input_form")
         
-        # 💡 REPLACE st.button with st.form_submit_button
         submitted = st.form_submit_button("Add Record", use_container_width=True)
-
+        
         if submitted:
-            # 💡 MOVE SUBMISSION LOGIC HERE
             if sensor_id == "":
                 st.session_state.record_message = "⚠️ Please select a Sensor ID before adding a record."
                 st.session_state.record_message_type = "warning"
-                st.experimental_rerun() # Trigger rerun to show warning message immediately
-                
             elif mode == "":
                 st.session_state.record_message = "⚠️ Please select an Event."
                 st.session_state.record_message_type = "warning"
-                st.experimental_rerun() # Trigger rerun to show warning message immediately
-                
             else:
-                # Execution logic
+                # Save record to Google Sheet
                 location = sensor_info[sensor_id]["Location"]
                 stype = sensor_info[sensor_id]["Type"]
                 Area = sensor_info[sensor_id]["Area"]
@@ -394,47 +379,35 @@ with col_left:
                     "date": pd.to_datetime(selected_date),
                     "note": note
                 }
-                # Load sheet within the callback to ensure data is fresh before appending
                 df = pd.concat([load_sheet(), pd.DataFrame([new_row])], ignore_index=True)
                 save_sheet(df)
 
-                # Set success message
                 st.session_state.record_message = "✅ Record added successfully!"
                 st.session_state.record_message_type = "success"
 
-                # Reset form widgets by clearing the session state keys used in this form
+                # Clear form inputs
                 st.session_state.sensor_form = ""
                 st.session_state.mode_select_form = ""
                 st.session_state.date_input_form = date.today()
                 st.session_state.note_input_form = ""
-                
-                st.experimental_rerun() # Trigger full rerun to update heatmap and table immediately
 
+                # Reload data for heatmap
+                df = load_sheet()
 
-# Show previous message if exists (must be outside the form)
+# =============================
+# Show message (outside forms)
+# =============================
 if st.session_state.record_message:
     if st.session_state.record_message_type == "success":
         st.success(st.session_state.record_message)
-        st.session_state.record_message = None # Clear message after display
     elif st.session_state.record_message_type == "warning":
         st.warning(st.session_state.record_message)
-        st.session_state.record_message = None # Clear message after display
-
-
+    st.session_state.record_message = None
+    st.session_state.record_message_type = None
 
 # =============================
-# BOTTOM: FULL-WIDTH HEATMAP
+# BOTTOM: HEATMAP
 # =============================
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
-
-
-
-
-
-
-
-
-
-
