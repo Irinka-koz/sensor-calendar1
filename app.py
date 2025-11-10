@@ -164,8 +164,8 @@ def build_heatmap(df):
                     heatmap_data.loc[sensor, day] = 1
 
 
-        stype = sdata["Type"]
-        slocation = sdata["Location"]
+        stype = heatmap_data["Type"]
+        slocation = heatmap_data["Location"]
         
         # Build hover text
         for day in all_days:
@@ -407,6 +407,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
