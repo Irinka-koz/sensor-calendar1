@@ -285,20 +285,6 @@ sensor_info = load_sensors()
 # TOP ROW: TABLE + INPUT FORM
 # =============================
 
-# Initialize session_state keys safely
-for key in [
-    "new_id_form", "new_area_form", "new_location_form", "new_type_form",
-    "sensor_form", "mode_select_form", "date_input_form", "note_input_form",
-    "record_message", "record_message_type"
-]:
-    if key not in st.session_state:
-        if "date" in key:
-            st.session_state[key] = date.today()
-        else:
-            st.session_state[key] = ""
-
-
-
 
 col_left, col_center, col_right = st.columns([1,1,2])
 
@@ -397,12 +383,6 @@ with col_left:
                 st.session_state.record_message = "✅ Record added successfully!"
                 st.session_state.record_message_type = "success"
 
-                # Clear form inputs
-                st.session_state.sensor_form = ""
-                st.session_state.mode_select_form = ""
-                st.session_state.date_input_form = date.today()
-                st.session_state.note_input_form = ""
-
                 # Reload data for heatmap
                 df = load_sheet()
 
@@ -423,5 +403,6 @@ if st.session_state.record_message:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
