@@ -50,10 +50,7 @@ def save_sheet(df):
 def save_sensors(sensor_info):
     """Save updated sensor list to Google Sheets"""
     sheet = client.open_by_key(SENSOR_SHEET_ID).sheet1
-    df = pd.DataFrame.from_dict(sensor_info, orient="index").reset_index()
-    df.rename(columns={"index": "Sensor_ID"}, inplace=True)
-    sheet.clear()
-    sheet.update([df.columns.values.tolist()] + df.values.tolist())
+    set_with_dataframe(sheet, df)
     
 # -------------------------
 # Heatmap
@@ -442,6 +439,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
