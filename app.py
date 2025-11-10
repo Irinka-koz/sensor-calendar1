@@ -317,52 +317,48 @@ def reset_form():
 
 # --- Center column: input form ---
 with st.expander("➕ Add New Sensor"):
-    st.write("Add a new sensor to the system")
+    # START FORM HERE
+    with st.form(key="new_sensor_form"):
+        st.write("Add a new sensor to the system")
 
-    # --- Input fields with session_state keys ---
-    new_id = st.text_input("Sensor ID", key="new_id")
-    new_area = st.selectbox("Area", ["Carmel", "Tzinim"], key="new_area")
-    new_location = st.text_input("Location", key="new_location")
-    new_type = st.selectbox("Type", ["Camera", "IR", "BT", "US"], key="new_type")
-
-    # --- Load current sensor list ---
-    # Convert loaded dict back to DataFrame for easy manipulation
-    sensor_df = pd.DataFrame.from_dict(sensor_info, orient="index").reset_index().rename(columns={"index": "Sensor_ID"})
-
-    def add_sensor():
-        # Validate
-        if new_id.strip() == "":
-            st.warning("⚠️ Please enter a Sensor ID.")
-            return
-        # Use current sensor_info keys for validation
-        if new_id in sensor_info.keys(): 
-            st.warning("⚠️ This Sensor ID already exists.")
-            return
-
-        # Create new row
-        new_sensor = {
-            "Sensor_ID": new_id.strip(),
-            "Area": new_area,
-            "Location": new_location,
-            "Type": new_type
-        }
-
-        # Save
-        # Concatenate and save the updated DataFrame
-        updated_df = pd.concat([sensor_df, pd.DataFrame([new_sensor])], ignore_index=True)
-        save_sensors(updated_df) # Now calls the corrected function
-
-        # ✅ Success message and form clear
-        st.success(f"✅ Sensor **{new_id}** added successfully!")
-        st.session_state.new_id = ""
-        st.session_state.new_location = ""
-        st.session_state.new_area = "Carmel"
-        st.session_state.new_type = "Camera"
+        # --- Input fields with session_state keys ---
+        # Note: keys for session state must remain unique
+        new_id = st.text_input("Sensor ID", key="new_id_form") # Added _form suffix
+        new_area = st.selectbox("Area", ["Carmel", "Tzinim"], key="new_area_form") # Added _form suffix
+        new_location = st.text_input("Location", key="new_location_form") # Added _form suffix
+        new_type = st.selectbox("Type", ["Camera", "IR", "BT", "US"], key="new_type_form") # Added _form suffix
         
-        # st.rerun() is removed as it's often a no-op in callbacks
-
-    st.button("Add Sensor", use_container_width=True, on_click=add_sensor)
-
+        # NOTE: The add_sensor function logic needs to be inside the callback
+        
+        # Use st.form_submit_button instead of st.button
+        submitted = st.form_submit_button("Add Sensor", use_container_width=True)
+        
+        if submitted:
+            # Replicate the logic from the old add_sensor function here
+            if new_id.strip() == "":
+                st.warning("⚠️ Please enter a Sensor ID.")
+                # We stop execution here but since we are in a form, Streamlit handles the state
+            elif new_id in sensor_info.keys(): 
+                st.warning("⚠️ This Sensor ID already exists.")
+            else:
+                new_sensor = {
+                    "Sensor_ID": new_id.strip(),
+                    "Area": new_area,
+                    "Location": new_location,
+                    "Type": new_type
+                }
+                # Reload df for validation check
+                sensor_df = pd.DataFrame.from_dict(load_sensors(), orient="index").reset_index().rename(columns={"index": "Sensor_ID"})
+                updated_df = pd.concat([sensor_df, pd.DataFrame([new_sensor])], ignore_index=True)
+                save_sensors(updated_df)
+                
+                st.success(f"✅ Sensor **{new_id}** added successfully!")
+                # Reset inputs by clearing keys
+                st.session_state.new_id_form = ""
+                st.session_state.new_location_form = ""
+                st.session_state.new_area_form = "Carmel"
+                st.session_state.new_type_form = "Camera"
+                st.experimental_rerun() # Use rerun to display the new sensor in the table/dropdowns instantly
 # --- Left column: input form ---
 with col_left:
     st.subheader("Add a New Record")
@@ -431,6 +427,7 @@ with col_left:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
