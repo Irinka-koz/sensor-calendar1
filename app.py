@@ -288,20 +288,33 @@ st.title("Sensor Maintenance Calendar")
 df = load_sheet()
 sensor_info = load_sensors()
 
+# =============================
+# Initialize session_state keys safely
+# =============================
+for key in [
+    "sensor_form", "mode_select_form", "date_input_form", "note_input_form",
+    "new_id_form", "new_area_form", "new_location_form", "new_type_form",
+    "record_message", "record_message_type"
+]:
+    if key not in st.session_state:
+        if "date" in key:
+            st.session_state[key] = date.today()
+        else:
+            st.session_state[key] = ""
+
 # ----------------------------
 # ADD NEW SENSOR (TOP)
 # ----------------------------
 with st.expander("➕ Add New Sensor"):
-    with st.form(key="new_sensor_form"):
-        st.write("Add a new sensor to the system")
+     with st.form(key="new_sensor_form"):
         new_id = st.text_input("Sensor ID", key="new_id_form")
         new_area = st.selectbox("Area", ["Carmel", "Tzinim"], key="new_area_form")
         new_location = st.text_input("Location", key="new_location_form")
         new_type = st.selectbox("Type", ["Camera", "IR", "BT", "US"], key="new_type_form")
         
-        submitted = st.form_submit_button("Add Sensor", use_container_width=True)
+        submitted_sensor = st.form_submit_button("Add Sensor", use_container_width=True)
         
-        if submitted:
+        if submitted_sensor:
             if new_id.strip() == "":
                 st.warning("⚠️ Please enter a Sensor ID.")
             elif new_id in sensor_info.keys():
@@ -313,13 +326,20 @@ with st.expander("➕ Add New Sensor"):
                     "Location": new_location,
                     "Type": new_type
                 }
-                # Save to Google Sheets
+                # Save new sensor to Google Sheet
                 sensor_df = pd.DataFrame.from_dict(load_sensors(), orient="index").reset_index().rename(columns={"index": "Sensor_ID"})
                 updated_df = pd.concat([sensor_df, pd.DataFrame([new_sensor])], ignore_index=True)
                 save_sensors(updated_df)
-                st.success(f"✅ Sensor **{new_id}** added successfully!")
                 
-                # Reload sensor_info so table updates
+                st.success(f"✅ Sensor **{new_id}** added successfully!")
+
+                # Reset form fields
+                st.session_state.new_id_form = ""
+                st.session_state.new_area_form = "Carmel"
+                st.session_state.new_location_form = ""
+                st.session_state.new_type_form = "Camera"
+                
+                # Reload sensor_info to update table and dropdowns
                 sensor_info = load_sensors()
 
 # ----------------------------
@@ -330,7 +350,6 @@ col_left, col_right = st.columns([1, 2])
 # --- Left column: Add Record ---
 with col_left:
     st.subheader("Add a New Record")
-    
     with st.form(key="new_record_form"):
         sensor_options = [""] + list(sensor_info.keys())
         sensor_id = st.selectbox("Sensor ID", sensor_options, key="sensor_form")
@@ -339,13 +358,15 @@ with col_left:
         selected_date = st.date_input("Select Date", max_value=date.today(), format="DD/MM/YYYY", key="date_input_form")
         note = st.text_input("Note (optional)", key="note_input_form")
         
-        submitted = st.form_submit_button("Add Record", use_container_width=True)
+        submitted_record = st.form_submit_button("Add Record", use_container_width=True)
         
-        if submitted:
+        if submitted_record:
             if sensor_id == "":
-                st.warning("⚠️ Please select a Sensor ID before adding a record.")
+                st.session_state.record_message = "⚠️ Please select a Sensor ID before adding a record."
+                st.session_state.record_message_type = "warning"
             elif mode == "":
-                st.warning("⚠️ Please select an Event.")
+                st.session_state.record_message = "⚠️ Please select an Event."
+                st.session_state.record_message_type = "warning"
             else:
                 # Save record to Google Sheet
                 location = sensor_info[sensor_id]["Location"]
@@ -363,8 +384,18 @@ with col_left:
                 }
                 df = pd.concat([load_sheet(), pd.DataFrame([new_row])], ignore_index=True)
                 save_sheet(df)
-                st.success("✅ Record added successfully!")
-                df = load_sheet()  # Reload for heatmap
+
+                st.session_state.record_message = "✅ Record added successfully!"
+                st.session_state.record_message_type = "success"
+
+                # Reset form fields
+                st.session_state.sensor_form = ""
+                st.session_state.mode_select_form = ""
+                st.session_state.date_input_form = date.today()
+                st.session_state.note_input_form = ""
+
+                # Reload data for heatmap
+                df = load_sheet()
 
 # --- Right column: Sensor Table ---
 with col_right:
@@ -381,6 +412,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
