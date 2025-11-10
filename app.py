@@ -325,11 +325,11 @@ with st.expander("➕ Add New Sensor"):
             save_sensors(updated_df)
             st.success(f"✅ Sensor **{new_id}** added successfully!")
 
-            # Reset form fields safely
-            st.session_state.new_id_form = ""
-            st.session_state.new_area_form = "Carmel"
-            st.session_state.new_location_form = ""
-            st.session_state.new_type_form = "Camera"
+            # Reset **all fields safely** using session_state `.get()` to avoid errors
+            for key, default in [("new_id_form", ""), ("new_area_form", "Carmel"),
+                                 ("new_location_form", ""), ("new_type_form", "Camera")]:
+                if key in st.session_state:
+                    st.session_state[key] = default
 
             # Reload sensors
             sensor_info = load_sensors()
@@ -403,6 +403,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
