@@ -130,7 +130,7 @@ def build_heatmap(df):
             if note:
                 day_notes[d] += f"- {note}<br>"
     
-            if mode == "start":
+            if mode == "Start":
                 start_active = d
                 active = True
             elif mode == "End" and start_active is not None:
@@ -140,17 +140,17 @@ def build_heatmap(df):
                         heatmap_data.loc[sensor, day] = 1
                 active = False
                 start_active = None
-            elif mode == "change location":
+            elif mode == "Change Location":
                 heatmap_data.loc[sensor, d] = 5
             elif mode in ["Change Battery", "Change Card"]:
                 if d in heatmap_data.columns:
                     val = heatmap_data.loc[sensor, d]
-                    if mode == "change battery":
+                    if mode == "Change Battery":
                         if val in [0, 1]:
                             heatmap_data.loc[sensor, d] = 2
                         elif val in [3]:
                             heatmap_data.loc[sensor, d] = 4
-                    elif mode == "change card":
+                    elif mode == "Change Card":
                         if val in [0, 1]:
                             heatmap_data.loc[sensor, d] = 3
                         elif val in [2]:
@@ -402,6 +402,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
