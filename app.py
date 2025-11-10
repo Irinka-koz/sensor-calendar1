@@ -170,7 +170,8 @@ def build_heatmap(df):
                       3: "Change Card", 4: "Battery & Card Change", 5: "Change Location"}[val]
     
             text = f"<b>Date:</b> {day.strftime('%Y-%m-%d')}<br>" \
-                   f"<b>Sensor:</b> {sensor}<br>" \
+                   f"<b>Type:</b> {type}<br>" \
+                   f"<b>Location:</b> {Location}<br>" \
                    f"<b>Event:</b> {status}<br>"
     
             # Only show Notes if there is something
@@ -402,6 +403,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
