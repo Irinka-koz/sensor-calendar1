@@ -373,7 +373,7 @@ with col_right:
         {"Sensor ID": k, "Area":v["Area"], "Location": v["Location"], "Type": v["Type"]}
         for k, v in sensor_info.items()
     ])
-    st.dataframe(sensor_info_table, use_container_width=True, height=400)
+    st.dataframe(sensor_info_table, use_container_width=True, height=410)
 
 # ----------------------------
 # HEATMAP
@@ -381,6 +381,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
