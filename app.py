@@ -223,26 +223,32 @@ def build_heatmap(df):
             showscale=False
         ))
 
-        # Create annotations for icons on start dates
+        # --- Add start icons safely ---
         annotations = []
+        
         for sensor in sensors:
             if sensor in sensor_start_dates:
                 sensor_type = sensor_metadata.get(sensor, {}).get('Type', 'Unknown')
                 icon = TYPE_ICONS.get(sensor_type, "●")
                 
                 for start_d in sensor_start_dates[sensor]:
-                    if start_d.year == yr:  # Only add icons for current year
-                        annotations.append(dict(
-                            x=start_d,
-                            y=sensor,
-                            text=icon,
-                            showarrow=False,
-                            font=dict(size=28, color="black"),
-                            xref="x",
-                            yref="y",
-                            xanchor="center",
-                            yanchor="middle"
-                        ))
+                    if start_d.year == yr and start_d in year_days:
+                        annotations.append(
+                            go.layout.Annotation(
+                                x=start_d,
+                                y=sensor,
+                                text=icon,
+                                showarrow=False,
+                                font=dict(size=28, color="black"),
+                                xanchor="center",
+                                yanchor="middle",
+                                xref="x",
+                                yref="y"
+                            )
+                        )
+
+        fig.update_layout(annotations=annotations)
+
 
         month_centers = []
         month_labels = []
@@ -437,6 +443,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
