@@ -104,11 +104,11 @@ def build_heatmap(df):
 
     # Green shades per sensor type
     type_green_map = {
-        "Camera": "#00CC66",
-        "IR": "#33CC33",
+        "Camera": "#014421",
+        "IR": "#03C03C",
         "BT": "#66CC33",
         "US": "#99CC33",
-        "Unknown": "#00CC66"
+        "Radar": "#00CC66"
     }
 
     # Other colors for events
@@ -405,6 +405,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
