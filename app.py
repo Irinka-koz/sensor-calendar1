@@ -278,32 +278,32 @@ def build_heatmap(df):
             ))
 
         # pattern
+        # pattern only for North
         highlight_x = []
         highlight_y = []
         highlight_text = []
-
-        # Estimate font size based on number of sensors and number of days
-        cell_height = max(20, 600 / len(sensors))  # 600 = total figure height (adjust as needed)
-        cell_width = max(10, 1000 / len(year_days))  # 1000 = total figure width (adjust as needed)
-        font_size = min(cell_height, cell_width)    # choose smaller dimension
-
         
         for sensor in sensors:
+            area = sensor_metadata.get(sensor, {}).get("Area", "")
+            if area != "North":
+                continue  # skip sensors not in North
+            
             for day in all_days:
                 highlight_x.append(day)
-                highlight_y.append(sensor)  # Use sensor name, not index
-                highlight_text.append("                 /")  # pattern for every cell
+                highlight_y.append(sensor)  # sensor names
+                highlight_text.append("                 /")  # your pattern
         
         fig.add_trace(go.Scatter(
             x=highlight_x,
-            y=highlight_y,  # sensor names
+            y=highlight_y,
             mode="text",
             text=highlight_text,
             textposition="middle center",
-            textfont=dict(size=65, color="rgba(0,0,0,0.1)"),
+            textfont=dict(size=65, color="rgba(0,0,0,0.1)"),  # semi-transparent
             showlegend=False,
             hoverinfo="none"
         ))
+
 
 
 
@@ -508,6 +508,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
