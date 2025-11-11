@@ -511,19 +511,12 @@ st.subheader("Legend")
 cols = st.columns(6)  # adjust number of columns per row
 
 legend_items = {
-    "Inactive": "#e5e5e5",
-    "Active": "#00CC66",
     "Change Battery": "#FF3333",
     "Change Card": "#FF9900",
     "Battery & Card Change": "#800080",
     "Change Location": "#3399FF",
     "Manual Count": "#FCDC4D",
     "Other Event": "#D496A7",
-    "Camera Active": "#50c878",
-    "IR Active": "#03C03C",
-    "BT Active": "#808000",
-    "US Active": "#388E3C",
-    "Radar Active": "#1B5E20"
 }
 
 # Display legend
@@ -534,6 +527,7 @@ for i, (label, color) in enumerate(legend_items.items()):
 # Then the heatmap
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
