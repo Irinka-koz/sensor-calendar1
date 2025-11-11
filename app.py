@@ -127,9 +127,9 @@ def build_heatmap(df):
         5: '#3399FF', #Location
         6: '#FCDC4D', #Manual Count
         7:'#D496A7', #Other
-        8: '#4CAF50',  # Medium Green (Camera)
-        9: '#66BB6A',  # Lighter Green (IR)
-        10: '#81C784',  # Lightest Green (BT)
+        8: '#50c878',  # Medium Green (Camera)
+        9: '#03C03C',  # Lighter Green (IR)
+        10: '#808000',  # Lightest Green (BT)
         11: '#388E3C',  # Darker Green (US)
         12: '#1B5E20'   # Darkest Green (Radar)
     }
@@ -441,6 +441,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
