@@ -5,6 +5,7 @@ seaborn
 gspread 
 gspread_dataframe 
 oauth2client
-plotly>=5.0.0
+plotly>=5.13
 mplcursors
+
 
