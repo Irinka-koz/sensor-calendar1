@@ -233,29 +233,6 @@ def build_heatmap(df):
             showscale=False
         ))
 
-        # Add hatch overlay for North sensors
-        north_sensors = [s for s in sensors if sensor_metadata.get(s, {}).get("Area") == "North"]
-        north_indices = [i for i, s in enumerate(sensors) if s in north_sensors]
-        for idx in north_indices:
-            fig.add_shape(
-                type="rect",
-                xref="x",
-                yref="y",
-                x0=year_days[0],
-                x1=year_days[-1],
-                y0=idx - 0.5,
-                y1=idx + 0.5,
-                line=dict(color="gray", width=0),
-                fillcolor="rgba(0,0,0,0)",
-                layer="above",
-                pattern=dict(
-                    shape="///",
-                    fillmode="overlay",
-                    size=6,
-                    solidity=0.2,
-                    fgcolor="black"
-                )
-            )
 
         # X-axis month centers
         month_centers = []
@@ -428,6 +405,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
