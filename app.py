@@ -214,32 +214,7 @@ def build_heatmap(df):
         ))
 
 
-    # --- Color overlay for each area ---
-    area_colors = {
-        'North': 'rgba(0,0,0,0.08)',   # light gray transparent overlay
-        'South': 'rgba(0,100,0,0.08)', # light green tint
-    }
-    
-    # Ensure you use the same filtered_df as your heatmap
-    for area, color in area_colors.items():
-        area_sensors = filtered_df.loc[filtered_df["Area"] == area, "Sensor_ID"].unique()
-        for sensor in area_sensors:
-            if sensor not in sensors:
-                continue
-            y_index = list(sensors).index(sensor)
-            fig.add_shape(
-                type="rect",
-                xref="x",
-                yref="y",
-                x0=year_days[0],
-                x1=year_days[-1],
-                y0=y_index - 0.5,
-                y1=y_index + 0.5,
-                line=dict(width=0),
-                fillcolor=color,
-                layer="below"
-            )
- 
+
 
 
         # Set x-axis ticks at month centers with abbreviations
@@ -444,6 +419,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
