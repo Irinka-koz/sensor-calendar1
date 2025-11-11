@@ -319,7 +319,7 @@ for key in [
 with st.expander("➕ Add New Sensor"):
     with st.form(key="new_sensor_form", clear_on_submit=True):
         new_id = st.text_input("Sensor ID", key="new_id_form")
-        new_area = st.selectbox("Area", ["","Carmel", "Tzinim"], key="new_area_form")
+        new_area = st.selectbox("Area", ["","North", "South"], key="new_area_form")
         new_location = st.text_input("Location", key="new_location_form")
         new_type = st.selectbox("Type", ["", "Camera", "IR", "BT", "US"], key="new_type_form")
         
@@ -363,8 +363,8 @@ with col_left:
     with st.form(key="new_record_form", clear_on_submit=True):
         sensor_options = [""] + list(sensor_info.keys())
         sensor_id = st.selectbox("Sensor ID", sensor_options, key="sensor_form")
-        mode_options = ["", "Start", "End", "Change Location", "Change Battery", "Change Card"]
-        mode = st.selectbox("Mode", mode_options, key="mode_select_form")
+        mode_options = ["", "Start", "End", "Change Location", "Change Battery", "Change Card", "Manual Count", "Other Event"]
+        mode = st.selectbox("Event", mode_options, key="mode_select_form")
         selected_date = st.date_input("Select Date", max_value=date.today(), format="DD/MM/YYYY", key="date_input_form")
         note = st.text_input("Note (optional)", key="note_input_form")
         
@@ -417,6 +417,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
