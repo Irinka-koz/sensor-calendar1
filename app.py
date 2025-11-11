@@ -208,18 +208,18 @@ def build_heatmap(df):
 
         # Create colorscale including type-specific green shades
         colorscale = [
-            [0/11, "#e5e5e5"],  # Inactive
-            [1/11, type_green_map["Camera"]],
-            [2/11, type_green_map["IR"]],
-            [3/11, type_green_map["BT"]],
-            [4/11, type_green_map["US"]],
-            [5/11, type_green_map["Radar"]],
-            [6/11, "#3399FF"],  # Change Location
-            [7/11, "#FF3333"],  # Change Battery
-            [8/11, "#FF9900"],  # Change Card
-            [9/11, "#800080"],  # Battery & Card Change
-            [10/11, "#FCDC4D"],  # Manual Count
-            [11/11,"#D496A7"]   # Other Event
+            [0/12, "#e5e5e5"],  # Inactive
+            [1/12, type_green_map["Camera"]],
+            [2/12, type_green_map["IR"]],
+            [3/12, type_green_map["BT"]],
+            [4/12, type_green_map["US"]],
+            [5/12, type_green_map["Radar"]],
+            [6/12, "#3399FF"],  # Change Location
+            [7/12, "#FF3333"],  # Change Battery
+            [8/12, "#FF9900"],  # Change Card
+            [9/12, "#800080"],  # Battery & Card Change
+            [10/12, "#FCDC4D"],  # Manual Count
+            [11/12,"#D496A7"]   # Other Event
         ]
 
         fig = go.Figure(go.Heatmap(
@@ -230,7 +230,7 @@ def build_heatmap(df):
             hoverinfo='text',
             colorscale=colorscale,
             zmin=0,
-            zmax=11,
+            zmax=12,
             showscale=False
         ))
 
@@ -406,6 +406,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
