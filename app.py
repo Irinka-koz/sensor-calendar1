@@ -237,7 +237,25 @@ def build_heatmap(df):
             zmax=12,
             showscale=False  # hide legend
         ))
-    
+
+                # --- ADD THIS BLOCK ---
+        highlight_date = pd.Timestamp("2025-04-01")
+        highlight_sensors = sensors  # or a subset if you want
+        highlight_x = [highlight_date] * len(highlight_sensors)
+        highlight_y = list(highlight_sensors)
+        highlight_text = ["📌 Important date"] * len(highlight_sensors)
+        
+        fig.add_trace(go.Scatter(
+            x=highlight_x,
+            y=highlight_y,
+            mode="markers+text",
+            marker=dict(symbol="star", size=20, color="red"),
+            text=highlight_text,
+            textposition="top center",
+            showlegend=False,
+            hoverinfo="text"
+        ))
+        # --- END ADDITION ---
 
         # Set x-axis ticks at month centers with abbreviations
         month_centers = []
@@ -440,6 +458,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
