@@ -193,63 +193,25 @@ def build_heatmap(df):
             
             hover_data.loc[sensor, day] = text
 
-# Multi-year heatmaps
+ # Multi-year heatmaps
     years = sorted(set(all_days.year))
     for yr in years:
         year_days = all_days[all_days.year == yr]
         z = heatmap_data.loc[:, year_days].values
         text = hover_data.loc[:, year_days].values
-        sensors_in_year = heatmap_data.loc[:, year_days].index.tolist()
 
-        zmax_val = 5
-        
-        # 1. Base Heatmap Trace
-        base_heatmap = go.Heatmap(
+        fig = go.Figure(go.Heatmap(
             z=z,
             x=year_days,
-            y=sensors_in_year,
+            y=sensors,
             text=text,
             hoverinfo='text',
-            colorscale=[[0/zmax_val, color_map[0]], [1/zmax_val, color_map[1]], [2/zmax_val, color_map[2]],
-                        [3/zmax_val, color_map[3]], [4/zmax_val, color_map[4]], [5/zmax_val, color_map[5]]],
+            colorscale=[[0/5, color_map[0]], [1/5, color_map[1]], [2/5, color_map[2]],
+                        [3/5, color_map[3]], [4/5, color_map[4]], [5/5, color_map[5]]],
             zmin=0,
-            zmax=zmax_val,
-            showscale=False
-        )
-        
-        # 2. HATCHING LOGIC (Using supported marker symbol 'hash')
-        
-        hatch_area = 'North' # <--- Change this to 'North' if needed
-
-        # Find which sensor IDs match the hatch area
-        hatch_sensor_ids = filtered_df[filtered_df['Area'] == hatch_area]['Sensor_ID'].unique().tolist()
-        hatch_x = []
-        hatch_y = []
-        
-        # Find the coordinates for hatching (all days for the target sensors)
-        for i, sensor in enumerate(sensors_in_year):
-            if sensor in hatch_sensor_ids:
-                # Use ALL days in the year, as requested, to cover the entire sensor row
-                for day in year_days:
-                    hatch_x.append(day)
-                    hatch_y.append(sensor)
-
-        # Create the Scatter Trace for Hatching
-        hatch_trace = go.Scatter(
-            x=hatch_x,
-            y=hatch_y,
-            mode='markers',
-            marker=dict(
-                size=35, # Set a large size to fully cover the cell area
-                symbol='hash', # 💡 SAFE FIX: Using supported symbol 'hash' (#)
-                color='rgba(100, 100, 100, 0.9)', # Semi-transparent black/grey color for visibility
-                line=dict(width=0),
-            ),
-            hoverinfo='none', # Prevents hover box on the pattern itself
-            showlegend=False
-        )
-
-        fig = go.Figure(data=[base_heatmap, hatch_trace])
+            zmax=5,
+            showscale=False  # hide legend
+        ))
 
 
         # Set x-axis ticks at month centers with abbreviations
@@ -270,16 +232,17 @@ def build_heatmap(df):
             tickfont=dict(size=16)
         )
         fig.update_yaxes(
-            tickfont=dict(size=16)
+            tickfont=dict(size=16)  # y-axis label font
         )
         # Vertical lines at month ends
         shapes = []
         
         for m in range(1, 13):
+            # Get all days in this month
             month_days = [d for d in year_days if d.month == m]
             if not month_days:
                 continue
-            last_day = month_days[-1]
+            last_day = month_days[-1]  # last day of the month within year_days
             shapes.append(dict(
                 type="line",
                 xref="x",
@@ -310,19 +273,19 @@ def build_heatmap(df):
 
         fig.update_layout(
             title=dict(
-                text=f"{yr}",
-                x=0.5,
+                text=f"{yr}",   # Your title
+                x=0.5,          # Center horizontally (0 = left, 0.5 = center, 1 = right)
                 xanchor='center',
                 yanchor='top',
-                font=dict(size=24)
+                font=dict(size=24)  # Optional: make it bigger
             ),
             yaxis_title="Sensor ID",
             xaxis_title="Month",
-            height=len(sensors) * 60 + 150,
-            modebar_add=['v1hovermode']
+            height=len(sensors)*60 + 150
         )
 
         st.plotly_chart(fig, use_container_width=True)
+
 
 # -------------------------
 # App UI
@@ -454,6 +417,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
