@@ -230,7 +230,7 @@ def build_heatmap(df):
             hoverinfo='text',
             colorscale=colorscale,
             zmin=0,
-            zmax=12,
+            zmax=11,
             showscale=False
         ))
 
@@ -406,6 +406,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
