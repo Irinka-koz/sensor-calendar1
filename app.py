@@ -239,12 +239,29 @@ def build_heatmap(df):
         ))
 
                 # --- ADD THIS BLOCK ---
-        highlight_date = pd.Timestamp("2025-04-01")
+        #highlight_date = pd.Timestamp("2025-04-01")
        # Filter sensors that are of type "Camera"
-        highlight_sensors = [s for s in sensors if sensor_metadata.get(s, {}).get('Type') == "Camera"]
-        highlight_x = [highlight_date] * len(highlight_sensors)
-        highlight_y = list(highlight_sensors)
-        highlight_text = ["📷"] * len(highlight_sensors)
+        #highlight_sensors = [s for s in sensors if sensor_metadata.get(s, {}).get('Type') == "Camera"]
+        #highlight_x = [highlight_date] * len(highlight_sensors)
+        #highlight_y = list(highlight_sensors)
+        #highlight_text = ["📷"] * len(highlight_sensors)
+
+        # Filter only camera sensors
+        camera_sensors = [s for s in sensors if sensor_metadata.get(s, {}).get('Type') == "Camera"]
+        
+        highlight_x = []
+        highlight_y = []
+        highlight_text = []
+        
+        for sensor in camera_sensors:
+            # Get the first day where this sensor was active (from heatmap_data)
+            sensor_row = heatmap_data.loc[sensor]
+            active_days = sensor_row[sensor_row > 0]  # any non-zero value is "active"
+            if not active_days.empty:
+                first_day = active_days.index[0]
+                highlight_x.append(first_day)
+                highlight_y.append(sensor)
+                highlight_text.append("📷")  # Camera emoji
         
         fig.add_trace(go.Scatter(
             x=highlight_x,
@@ -459,6 +476,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
