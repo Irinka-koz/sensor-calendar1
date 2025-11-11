@@ -105,7 +105,8 @@ def build_heatmap(df):
     #Map sensor metadata (Location/Type) for easy lookup
     sensor_metadata = filtered_df.groupby('Sensor_ID').agg({
         'Location': lambda x: x.iloc[0], # Get the first non-null location
-        'Type': lambda x: x.iloc[0]       # Get the first non-null type
+        'Type': lambda x: x.iloc[0] 
+        'Area': lambda x: x.iloc[0]# Get the first non-null type
     }).to_dict(orient='index')
 
     # Define Mappings (Paste TYPE_MAPPING and GREEN_SHADES here)
@@ -508,6 +509,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
