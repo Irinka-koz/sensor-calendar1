@@ -248,40 +248,9 @@ def build_heatmap(df):
             colorscale = [[i/12, color_map[i]] for i in range(13)],
             zmin=0,
             zmax=12,
-            showscale=False  # hide legend
+            showscale=False,  # hide legend
             pattern_shape=pattern_array.values
         ))
-
-
-        # Filter only camera sensors
-        #camera_sensors = [s for s in sensors if sensor_metadata.get(s, {}).get('Type') == "Camera"]
-        
-       # highlight_x = []
-        #highlight_y = []
-        #highlight_text = []
-        
-        #for sensor in camera_sensors:
-            # Get the first day where this sensor was active (from heatmap_data)
-          #  sensor_row = heatmap_data.loc[sensor]
-          #  active_days = sensor_row[sensor_row > 0]  # any non-zero value is "active"
-          # if not active_days.empty:
-            #    first_day = active_days.index[0]
-            #    highlight_x.append(first_day)
-           #    highlight_y.append(sensor)
-             #   highlight_text.append("📷")  # Camera emoji
-        
-    #    fig.add_trace(go.Scatter(
-      #      x=highlight_x,
-       #     y=highlight_y,
-        #    mode="text",
-        #    text=highlight_text,
-        #    textposition="top center",
-        #    textfont=dict(size=30),
-        #   showlegend=False,
-        #    hoverinfo="none"
-      #  ))
-        # --- END ADDITION ---
-
 
         # Define sensor types and their icons
         icon_map = {
@@ -521,6 +490,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
