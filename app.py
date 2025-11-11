@@ -300,7 +300,7 @@ def build_heatmap(df):
             mode="text",
             text=highlight_text,
             textposition="middle center",
-            textfont=dict(size=font_size, color="rgba(0,0,0,0.3)"),
+            textfont=dict(size=100, color="rgba(0,0,0,0.3)"),
             showlegend=False,
             hoverinfo="none"
         ))
@@ -508,6 +508,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
