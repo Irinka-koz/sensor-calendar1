@@ -219,19 +219,7 @@ def build_heatmap(df):
             
             hover_data.loc[sensor, day] = text
 
-
-    # Initialize empty pattern array with same shape as heatmap_data
-    pattern_array = pd.DataFrame("", index=sensors, columns=all_days)
-    
-    # Fill '////' for sensors in Area "North"
-    for sensor in sensors:
-        area = sensor_metadata.get(sensor, {}).get("Area", "")
-        if area == "North":
-            sensor_row = heatmap_data.loc[sensor]
-            active_days = sensor_row[sensor_row > 0].index  # only active days
-            pattern_array.loc[sensor, active_days] = "////"  # diagonal lines
-
-    
+        
     # Multi-year heatmaps
     years = sorted(set(all_days.year))
     for yr in years:
@@ -249,7 +237,7 @@ def build_heatmap(df):
             zmin=0,
             zmax=12,
             showscale=False,  # hide legend
-            pattern_shape=pattern_array.values
+            #pattern_shape=pattern_array.values
         ))
 
         # Define sensor types and their icons
@@ -288,6 +276,32 @@ def build_heatmap(df):
                 showlegend=False,
                 hoverinfo="none"
             ))
+
+        highlight_x = []
+        highlight_y = []
+        highlight_text = []
+        
+        for sensor in sensors:
+            area = sensor_metadata.get(sensor, {}).get("Area", "")
+            if area == "North":
+                sensor_row = heatmap_data.loc[sensor]
+                active_days = sensor_row[sensor_row > 0].index
+                for day in active_days:
+                    highlight_x.append(day)
+                    highlight_y.append(sensor)
+                    highlight_text.append("////")  # your pattern
+        
+        fig.add_trace(go.Scatter(
+            x=highlight_x,
+            y=highlight_y,
+            mode="text",
+            text=highlight_text,
+            textposition="middle center",
+            textfont=dict(size=14, color="black"),
+            showlegend=False,
+            hoverinfo="none"
+        ))
+
 
         # Set x-axis ticks at month centers with abbreviations
         month_centers = []
@@ -490,6 +504,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
