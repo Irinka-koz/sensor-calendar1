@@ -292,7 +292,7 @@ def build_heatmap(df):
             for day in all_days:
                 highlight_x.append(day)
                 highlight_y.append(sensor)  # Use sensor name, not index
-                highlight_text.append("////")  # pattern for every cell
+                highlight_text.append("/")  # pattern for every cell
         
         fig.add_trace(go.Scatter(
             x=highlight_x,
@@ -300,7 +300,7 @@ def build_heatmap(df):
             mode="text",
             text=highlight_text,
             textposition="middle center",
-            textfont=dict(size=font_size, color="rgba(0,0,0,0.3)"),
+            textfont=dict(size=50, color="rgba(0,0,0,0.3)"),
             showlegend=False,
             hoverinfo="none"
         ))
@@ -508,6 +508,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
