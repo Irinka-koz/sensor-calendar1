@@ -62,24 +62,20 @@ def build_heatmap(df):
     # --- Filter controls ---
     st.subheader("🔍 Filter data")
 
-    # Make sure the new columns exist
     if 'Area' not in df.columns:
         df['Area'] = 'Unknown'
     if 'Type' not in df.columns:
         df['Type'] = 'Unknown'
 
-    # Get unique values for filters
     all_areas = sorted(df['Area'].dropna().unique().tolist())
     all_sensors = sorted(df['Sensor_ID'].dropna().unique().tolist())
     all_types = sorted(df['Type'].dropna().unique().tolist())
     
-    # Create multiselect widgets
     col1, col2, col3 = st.columns(3)
     selected_areas = col1.multiselect("Select Area(s)", all_areas, default=all_areas)
     selected_sensors = col2.multiselect("Select Sensor ID(s)", all_sensors, default=all_sensors)
     selected_types = col3.multiselect("Select Type(s)", all_types, default=all_types)
 
-    # --- Apply filters ---
     filtered_df = df[
         df['Area'].isin(selected_areas) &
         df['Sensor_ID'].isin(selected_sensors) &
@@ -99,13 +95,11 @@ def build_heatmap(df):
     heatmap_data = pd.DataFrame(0, index=sensors, columns=all_days)
     hover_data = pd.DataFrame("", index=sensors, columns=all_days)
 
-    # Map sensor metadata (Location/Type) for easy lookup
     sensor_metadata = filtered_df.groupby('Sensor_ID').agg({
         'Location': lambda x: x.iloc[0],
         'Type': lambda x: x.iloc[0]
     }).to_dict(orient='index')
 
-    # Define Mappings
     TYPE_MAPPING = {
         "Camera": 8,
         "IR": 9,
@@ -114,7 +108,6 @@ def build_heatmap(df):
         "Radar": 12
     }
     
-    # Icon mapping by sensor type
     TYPE_ICONS = {
         "Camera": "📷",
         "IR": "🔴",
@@ -123,32 +116,14 @@ def build_heatmap(df):
         "Radar": "📡"
     }
     
-    # Colors mapping
     color_map = {
-        0: '#e5e5e5',  # Inactive
-        1: '#00CC66',  # Active
-        2: '#FF3333',  # Battery
-        3: '#FF9900',  # Card
-        4: '#800080',  # Both
-        5: '#3399FF',  # Location
-        6: '#FCDC4D',  # Manual Count
-        7: '#D496A7',  # Other Event
-        8: '#50c878',  # Camera
-        9: '#03C03C',  # IR
-        10: '#808000', # BT
-        11: '#388E3C', # US
-        12: '#1B5E20'  # Radar
+        0: '#e5e5e5', 1: '#00CC66', 2: '#FF3333', 3: '#FF9900',
+        4: '#800080', 5: '#3399FF', 6: '#FCDC4D', 7: '#D496A7',
+        8: '#50c878', 9: '#03C03C', 10: '#808000', 11: '#388E3C', 12: '#1B5E20'
     }
 
-    # Track start dates for each sensor
     sensor_start_dates = {}
     
-    # DEBUG: Check what data we have
-    st.write("🔍 Debug Info:")
-    st.write(f"Total sensors: {len(sensors)}")
-    st.write(f"Date range: {start_date} to {end_date}")
-    
-    # Fill heatmap_data and hover_data
     for sensor in sensors:
         sdata = filtered_df[filtered_df["Sensor_ID"] == sensor].sort_values("date")
         sensor_type = sensor_metadata.get(sensor, {}).get('Type', 'Unknown')
@@ -170,11 +145,9 @@ def build_heatmap(df):
             if mode == "Start":
                 start_active = d
                 active = True
-                # Store start date for this sensor
                 if sensor not in sensor_start_dates:
                     sensor_start_dates[sensor] = []
                 sensor_start_dates[sensor].append(d)
-                st.write(f"✅ Found Start event: Sensor {sensor}, Date {d}, Type: {sensor_type}")
             elif mode == "End" and start_active is not None:
                 mask = (all_days >= start_active) & (all_days <= d)
                 for day in all_days[mask]:
@@ -202,14 +175,12 @@ def build_heatmap(df):
                         elif val in [2]:
                             heatmap_data.loc[sensor, d] = 4
     
-        # If started but never ended
         if active and start_active is not None:
             mask = (all_days >= start_active) & (all_days <= end_date)
             for day in all_days[mask]:
                 if heatmap_data.loc[sensor, day] == 0:
                     heatmap_data.loc[sensor, day] = active_value
 
-        # Build hover text
         for day in all_days:
             val = heatmap_data.loc[sensor, day]
             status = {
@@ -234,11 +205,6 @@ def build_heatmap(df):
             
             hover_data.loc[sensor, day] = text
 
-    # DEBUG: Show what start dates we found
-    st.write(f"📌 Total start dates found: {sum(len(dates) for dates in sensor_start_dates.values())}")
-    st.write("Start dates by sensor:", sensor_start_dates)
-
-    # Multi-year heatmaps
     years = sorted(set(all_days.year))
     for yr in years:
         year_days = all_days[all_days.year == yr]
@@ -257,31 +223,27 @@ def build_heatmap(df):
             showscale=False
         ))
 
-        # Add icons as annotations for start dates
+        # Create annotations for icons on start dates
         annotations = []
-        for sensor_idx, sensor in enumerate(sensors):
+        for sensor in sensors:
             if sensor in sensor_start_dates:
                 sensor_type = sensor_metadata.get(sensor, {}).get('Type', 'Unknown')
                 icon = TYPE_ICONS.get(sensor_type, "●")
                 
-                for start_date in sensor_start_dates[sensor]:
-                    if start_date in year_days:
+                for start_d in sensor_start_dates[sensor]:
+                    if start_d.year == yr:  # Only add icons for current year
                         annotations.append(dict(
-                            x=start_date,
+                            x=start_d,
                             y=sensor,
                             text=icon,
                             showarrow=False,
-                            font=dict(size=24, color="black"),
+                            font=dict(size=28, color="black"),
                             xref="x",
                             yref="y",
                             xanchor="center",
                             yanchor="middle"
                         ))
-        
-        # Debug: Show how many icons were added
-        st.write(f"📍 Added {len(annotations)} icon(s) for {yr}")
 
-        # Set x-axis ticks at month centers
         month_centers = []
         month_labels = []
         for m in range(1, 13):
@@ -300,7 +262,6 @@ def build_heatmap(df):
         )
         fig.update_yaxes(tickfont=dict(size=16))
         
-        # Vertical and horizontal lines
         shapes = []
         for m in range(1, 13):
             month_days = [d for d in year_days if d.month == m]
@@ -332,7 +293,7 @@ def build_heatmap(df):
         
         fig.update_layout(
             shapes=shapes,
-            annotations=annotations,  # Add the icons here
+            annotations=annotations,
             title=dict(
                 text=f"{yr}",
                 x=0.5,
@@ -345,7 +306,7 @@ def build_heatmap(df):
             height=len(sensors)*60 + 150
         )
 
-        st.plotly_chart(fig, use_container_width=True))
+        st.plotly_chart(fig, use_container_width=True)
 # -------------------------
 # App UI
 # -------------------------
@@ -476,6 +437,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
