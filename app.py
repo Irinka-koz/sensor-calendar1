@@ -117,7 +117,7 @@ def build_heatmap(df):
     }
     
     color_map = {
-        0: '#e5e5e5', 1: '#00CC66', 2: '#FF3333', 3: '#FF9900',
+        0: '#pink', 1: '#00CC66', 2: '#FF3333', 3: '#FF9900',
         4: '#800080', 5: '#3399FF', 6: '#FCDC4D', 7: '#D496A7',
         8: '#50c878', 9: '#03C03C', 10: '#808000', 11: '#388E3C', 12: '#1B5E20'
     }
@@ -443,6 +443,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
