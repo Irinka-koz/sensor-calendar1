@@ -506,8 +506,35 @@ with col_right:
 # HEATMAP
 # ----------------------------
 st.markdown("---")
+# Legend above the heatmap
+st.subheader("Legend")
+cols = st.columns(6)  # adjust number of columns per row
+
+legend_items = {
+    "Inactive": "#e5e5e5",
+    "Active": "#00CC66",
+    "Change Battery": "#FF3333",
+    "Change Card": "#FF9900",
+    "Battery & Card Change": "#800080",
+    "Change Location": "#3399FF",
+    "Manual Count": "#FCDC4D",
+    "Other Event": "#D496A7",
+    "Camera Active": "#50c878",
+    "IR Active": "#03C03C",
+    "BT Active": "#808000",
+    "US Active": "#388E3C",
+    "Radar Active": "#1B5E20"
+}
+
+# Display legend
+for i, (label, color) in enumerate(legend_items.items()):
+    col = cols[i % len(cols)]
+    col.markdown(f"<span style='background-color:{color};padding:5px 10px;border-radius:3px;'>{label}</span>", unsafe_allow_html=True)
+
+# Then the heatmap
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
