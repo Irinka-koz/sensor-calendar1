@@ -193,7 +193,7 @@ def build_heatmap(df):
             
             hover_data.loc[sensor, day] = text
 
-    # Multi-year heatmaps
+# Multi-year heatmaps
     years = sorted(set(all_days.year))
     for yr in years:
         year_days = all_days[all_days.year == yr]
@@ -217,25 +217,20 @@ def build_heatmap(df):
             showscale=False
         )
         
-        # 2. HATCHING LOGIC (Area = 'North' or placeholder 'Carmel')
+        # 2. HATCHING LOGIC (Using supported marker symbol 'hash')
         
-        # Identify sensors in the target area (e.g., 'Carmel')
-        # We need the Area info from the overall filtered_df data
-        hatch_area = 'North' # <--- CHANGE THIS TO 'North' or another area if needed
+        hatch_area = 'Carmel' # <--- Change this to 'North' if needed
 
         # Find which sensor IDs match the hatch area
         hatch_sensor_ids = filtered_df[filtered_df['Area'] == hatch_area]['Sensor_ID'].unique().tolist()
-        
         hatch_x = []
         hatch_y = []
         
-        # Find the coordinates for hatching (every active cell for the target sensors)
+        # Find the coordinates for hatching (all days for the target sensors)
         for i, sensor in enumerate(sensors_in_year):
             if sensor in hatch_sensor_ids:
-                # Find all days where this sensor had an active event (val > 0)
-                active_days = heatmap_data.loc[sensor, year_days][heatmap_data.loc[sensor, year_days] > 0].index.tolist()
-                
-                for day in active_days:
+                # Use ALL days in the year, as requested, to cover the entire sensor row
+                for day in year_days:
                     hatch_x.append(day)
                     hatch_y.append(sensor)
 
@@ -245,20 +240,12 @@ def build_heatmap(df):
             y=hatch_y,
             mode='markers',
             marker=dict(
-                size=25, # 💡 INCREASED SIZE for better coverage/visibility
-                symbol='square',
-                color='rgba(0, 0, 0, 0)', # Marker background is fully transparent
+                size=25, # Set a large size to fully cover the cell area
+                symbol='hash', # 💡 SAFE FIX: Using supported symbol 'hash' (#)
+                color='rgba(0, 0, 0, 0.4)', # Semi-transparent black/grey color for visibility
                 line=dict(width=0),
-                # Ensure this is the syntax for Plotly >= 5.13
-                pattern=dict(
-                    shape='/', # Use diagonal slash
-                    fillmode='overlay',
-                    fgcolor='rgba(0, 0, 0, 0.5)', # Semi-transparent black for the pattern lines
-                    size=10, # Density of the pattern
-                    thickness=2
-                )
             ),
-            hoverinfo='none', # Prevent this overlay trace from showing a default hover box
+            hoverinfo='none', # Prevents hover box on the pattern itself
             showlegend=False
         )
 
@@ -269,7 +256,6 @@ def build_heatmap(df):
         month_centers = []
         month_labels = []
         for m in range(1, 13):
-            # ... (rest of month center calculation) ...
             month_days = [d for d in year_days if d.month == m]
             if not month_days:
                 continue
@@ -284,19 +270,16 @@ def build_heatmap(df):
             tickfont=dict(size=16)
         )
         fig.update_yaxes(
-            tickfont=dict(size=16)  # y-axis label font
+            tickfont=dict(size=16)
         )
         # Vertical lines at month ends
         shapes = []
         
-        # ... (rest of vertical/horizontal line logic using shapes remains the same) ...
-
         for m in range(1, 13):
-            # Get all days in this month
             month_days = [d for d in year_days if d.month == m]
             if not month_days:
                 continue
-            last_day = month_days[-1]  # last day of the month within year_days
+            last_day = month_days[-1]
             shapes.append(dict(
                 type="line",
                 xref="x",
@@ -327,8 +310,8 @@ def build_heatmap(df):
 
         fig.update_layout(
             title=dict(
-                text=f"{yr}",  # Your title
-                x=0.5,         # Center horizontally
+                text=f"{yr}",
+                x=0.5,
                 xanchor='center',
                 yanchor='top',
                 font=dict(size=24)
@@ -336,8 +319,7 @@ def build_heatmap(df):
             yaxis_title="Sensor ID",
             xaxis_title="Month",
             height=len(sensors) * 60 + 150,
-            # Set modebar to show plot tools
-            modebar_add=['v1hovermode'] 
+            modebar_add=['v1hovermode']
         )
 
         st.plotly_chart(fig, use_container_width=True)
@@ -472,6 +454,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
