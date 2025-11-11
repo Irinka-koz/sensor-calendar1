@@ -305,50 +305,6 @@ def build_heatmap(df):
             hoverinfo="none"
         ))
 
- #legend
-        legend_items = {
-            "Inactive": "#e5e5e5",
-            "Active": "#00CC66",
-            "Change Battery": "#FF3333",
-            "Change Card": "#FF9900",
-            "Battery & Card Change": "#800080",
-            "Change Location": "#3399FF",
-            "Manual Count": "#FCDC4D",
-            "Other Event": "#D496A7",
-            "Camera Active": "#50c878",
-            "IR Active": "#03C03C",
-            "BT Active": "#808000",
-            "US Active": "#388E3C",
-            "Radar Active": "#1B5E20"
-        }
-
-
-        
-        legend_x = []
-        legend_y = []
-        legend_text = []
-        legend_color = []
-        
-        y_offset = len(sensors) + 1  # place above heatmap
-        
-        for i, (label, color) in enumerate(legend_items.items()):
-            legend_x.append(i)          # x positions
-            legend_y.append(y_offset)   # y position above heatmap
-            legend_text.append(label)   
-            legend_color.append(color)
-        
-        # Add legend as markers + text
-        fig.add_trace(go.Scatter(
-            x=legend_x,
-            y=legend_y,
-            mode="markers+text",
-            marker=dict(color=legend_color, size=20),
-            text=legend_text,
-            textposition="top center",
-            showlegend=False,
-            hoverinfo="none"
-        ))
-
 
 
         # Set x-axis ticks at month centers with abbreviations
@@ -552,6 +508,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
