@@ -273,7 +273,7 @@ def build_heatmap(df):
         icon_map = {
             "Camera": "📷",
             "BT": "📶",
-            "IR": "🌡️",
+            "IR": "💥",
             "Radar": "📡"
         }
         
@@ -507,6 +507,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
