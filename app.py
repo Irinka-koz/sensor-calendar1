@@ -219,7 +219,7 @@ def build_heatmap(df):
         
         # 2. HATCHING LOGIC (Using supported marker symbol 'hash')
         
-        hatch_area = 'Carmel' # <--- Change this to 'North' if needed
+        hatch_area = 'North' # <--- Change this to 'North' if needed
 
         # Find which sensor IDs match the hatch area
         hatch_sensor_ids = filtered_df[filtered_df['Area'] == hatch_area]['Sensor_ID'].unique().tolist()
@@ -240,9 +240,9 @@ def build_heatmap(df):
             y=hatch_y,
             mode='markers',
             marker=dict(
-                size=25, # Set a large size to fully cover the cell area
+                size=35, # Set a large size to fully cover the cell area
                 symbol='hash', # 💡 SAFE FIX: Using supported symbol 'hash' (#)
-                color='rgba(0, 0, 0, 0.4)', # Semi-transparent black/grey color for visibility
+                color='rgba(100, 100, 100, 0.9)', # Semi-transparent black/grey color for visibility
                 line=dict(width=0),
             ),
             hoverinfo='none', # Prevents hover box on the pattern itself
@@ -454,6 +454,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
