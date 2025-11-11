@@ -286,7 +286,7 @@ def build_heatmap(df):
         
         for sensor in sensors:
             area = sensor_metadata.get(sensor, {}).get("Area", "")
-            if area != "North":
+            if area == "North":
                 continue  # skip sensors not in North
             
             for day in all_days:
@@ -509,6 +509,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
