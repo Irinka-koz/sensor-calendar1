@@ -194,63 +194,83 @@ def build_heatmap(df):
             hover_data.loc[sensor, day] = text
 
     # Multi-year heatmaps
+# Multi-year heatmaps
     years = sorted(set(all_days.year))
     for yr in years:
         year_days = all_days[all_days.year == yr]
         z = heatmap_data.loc[:, year_days].values
         text = hover_data.loc[:, year_days].values
+        sensors_in_year = heatmap_data.loc[:, year_days].index.tolist()
 
-        fig = go.Figure(go.Heatmap(
+        zmax_val = 5
+        
+        # 1. Base Heatmap Trace
+        base_heatmap = go.Heatmap(
             z=z,
             x=year_days,
-            y=sensors,
+            y=sensors_in_year,
             text=text,
             hoverinfo='text',
-            colorscale=[[0/5, color_map[0]], [1/5, color_map[1]], [2/5, color_map[2]],
-                        [3/5, color_map[3]], [4/5, color_map[4]], [5/5, color_map[5]]],
+            colorscale=[[0/zmax_val, color_map[0]], [1/zmax_val, color_map[1]], [2/zmax_val, color_map[2]],
+                        [3/zmax_val, color_map[3]], [4/zmax_val, color_map[4]], [5/zmax_val, color_map[5]]],
             zmin=0,
-            zmax=5,
-            showscale=False  # hide legend
-        ))
+            zmax=zmax_val,
+            showscale=False
+        )
+        
+        # 2. HATCHING LOGIC (Area = 'North' or placeholder 'Carmel')
+        
+        # Identify sensors in the target area (e.g., 'Carmel')
+        # We need the Area info from the overall filtered_df data
+        hatch_area = 'Carmel' # <--- CHANGE THIS TO 'North' or another area if needed
 
+        # Find which sensor IDs match the hatch area
+        hatch_sensor_ids = filtered_df[filtered_df['Area'] == hatch_area]['Sensor_ID'].unique().tolist()
+        
+        hatch_x = []
+        hatch_y = []
+        
+        # Find the coordinates for hatching (every active cell for the target sensors)
+        for i, sensor in enumerate(sensors_in_year):
+            if sensor in hatch_sensor_ids:
+                # Find all days where this sensor had an active event (val > 0)
+                active_days = heatmap_data.loc[sensor, year_days][heatmap_data.loc[sensor, year_days] > 0].index.tolist()
+                
+                for day in active_days:
+                    hatch_x.append(day)
+                    hatch_y.append(sensor)
 
-    # After your existing go.Figure(go.Heatmap(...)) line:
-
-    # Identify sensors in North area
-    north_sensors = [s for s in sensors if sensor_info.get(s, {}).get("Area") == "North"]
-    north_indices = [i for i, s in enumerate(sensors) if s in north_sensors]
-    
-    # Add hatch overlay for North rows
-    for idx in north_indices:
-        fig.add_shape(
-            type="rect",
-            xref="x",
-            yref="y",
-            x0=year_days[0],
-            x1=year_days[-1],
-            y0=idx - 0.5,
-            y1=idx + 0.5,
-            line=dict(color="gray", width=0),
-            fillcolor="rgba(0,0,0,0)",  # fully transparent
-            layer="above",
-            pattern=dict(
-                shape="///",
-                fillmode="overlay",
-                size=6,
-                solidity=0.2,
-                fgcolor="black"
-            )
+        # Create the Scatter Trace for Hatching
+        hatch_trace = go.Scatter(
+            x=hatch_x,
+            y=hatch_y,
+            mode='markers',
+            marker=dict(
+                size=12,  # Adjust size to cover the cell (may require tuning)
+                symbol='square',
+                color='rgba(0, 0, 0, 0)', # Make marker color transparent
+                line=dict(width=0),
+                # 💡 Plotly native pattern support for markers
+                pattern=dict(
+                    shape='slash', # Options: 'x', 'plus', 'dot', 'dash', 'slash', 'backslash', etc.
+                    fillmode='overlay',
+                    fgcolor='rgba(0, 0, 0, 0.4)', # Gray-ish semi-transparent pattern color
+                    size=6,
+                    thickness=1
+                )
+            ),
+            hoverinfo='none', # Prevent this overlay trace from showing a default hover box
+            showlegend=False
         )
 
-
-
-
+        fig = go.Figure(data=[base_heatmap, hatch_trace])
 
 
         # Set x-axis ticks at month centers with abbreviations
         month_centers = []
         month_labels = []
         for m in range(1, 13):
+            # ... (rest of month center calculation) ...
             month_days = [d for d in year_days if d.month == m]
             if not month_days:
                 continue
@@ -270,6 +290,8 @@ def build_heatmap(df):
         # Vertical lines at month ends
         shapes = []
         
+        # ... (rest of vertical/horizontal line logic using shapes remains the same) ...
+
         for m in range(1, 13):
             # Get all days in this month
             month_days = [d for d in year_days if d.month == m]
@@ -306,15 +328,17 @@ def build_heatmap(df):
 
         fig.update_layout(
             title=dict(
-                text=f"{yr}",   # Your title
-                x=0.5,          # Center horizontally (0 = left, 0.5 = center, 1 = right)
+                text=f"{yr}",  # Your title
+                x=0.5,         # Center horizontally
                 xanchor='center',
                 yanchor='top',
-                font=dict(size=24)  # Optional: make it bigger
+                font=dict(size=24)
             ),
             yaxis_title="Sensor ID",
             xaxis_title="Month",
-            height=len(sensors)*60 + 150
+            height=len(sensors) * 60 + 150,
+            # Set modebar to show plot tools
+            modebar_add=['v1hovermode'] 
         )
 
         st.plotly_chart(fig, use_container_width=True)
@@ -449,6 +473,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
