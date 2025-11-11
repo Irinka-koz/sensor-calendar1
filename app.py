@@ -286,12 +286,10 @@ def build_heatmap(df):
         sensor_to_y = {sensor: i for i, sensor in enumerate(sensors)}
         
         for sensor in sensors:
-            sensor_row = heatmap_data.loc[sensor]
-            active_days = sensor_row[sensor_row > 0].index  # non-zero = active
-            for day in active_days:
+            for day in all_days:
                 highlight_x.append(day)
-                highlight_y.append(sensor_to_y[sensor])  # numeric y-axis
-                highlight_text.append("////")  # pattern
+                highlight_y.append(sensor_to_y[sensor])
+                highlight_text.append("////")  # pattern for every cell
         
         # Add as Scatter on top of heatmap
         fig.add_trace(go.Scatter(
@@ -304,7 +302,6 @@ def build_heatmap(df):
             showlegend=False,
             hoverinfo="none"
         ))
-
 
 
         # Set x-axis ticks at month centers with abbreviations
@@ -508,6 +505,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
