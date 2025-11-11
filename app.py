@@ -121,41 +121,28 @@ def build_heatmap(df):
         "Other Event": 11
     }
 
+    # ----------------------------
     # Fill heatmap_data and hover_data
+    # ----------------------------
     for sensor in sensors:
         sdata = filtered_df[filtered_df["Sensor_ID"] == sensor].sort_values("date")
+        active = False
+        start_active = None
         sensor_type = sensor_metadata.get(sensor, {}).get("Type", "Unknown")
-        active_val = type_value_map.get(sensor_type, 1)
         day_notes = {day: "" for day in all_days}
-    
-        # Group events by day
-        grouped = sdata.groupby(sdata['date'].dt.normalize())
-        for day, group in grouped:
-            modes = group['mode'].tolist()
-            notes = group['note'].dropna().tolist()
-            if notes:
-                day_notes[day] = "<br>".join(f"- {n}" for n in notes)
-    
-            # Determine value for the day
-            if "Start" in modes:
-                heatmap_data.loc[sensor, day] = active_val
-            if "End" in modes:
-                heatmap_data.loc[sensor, day] = 0
-            if "Change Battery" in modes and "Change Card" in modes:
-                heatmap_data.loc[sensor, day] = event_value_map["Battery & Card Change"]
-            elif "Change Battery" in modes:
-                heatmap_data.loc[sensor, day] = event_value_map["Change Battery"]
-            elif "Change Card" in modes:
-                heatmap_data.loc[sensor, day] = event_value_map["Change Card"]
-            elif "Change Location" in modes:
-                heatmap_data.loc[sensor, day] = event_value_map["Change Location"]
-            elif "Manual Count" in modes:
-                heatmap_data.loc[sensor, day] = event_value_map["Manual Count"]
-            elif "Other Event" in modes:
-                heatmap_data.loc[sensor, day] = event_value_map["Other Event"]
 
+        for _, row in sdata.iterrows():
+            mode = row["mode"]
+            if pd.isna(row["date"]):
+                continue
+            d = row["date"].normalize()
+            note = row["note"] if pd.notna(row["note"]) else ""
 
-            # Fill values
+            # Accumulate notes
+            if note:
+                day_notes[d] += f"- {note}<br>"
+
+            # Active period
             if mode == "Start":
                 start_active = d
                 active = True
@@ -163,17 +150,32 @@ def build_heatmap(df):
                 mask = (all_days >= start_active) & (all_days <= d)
                 for day in all_days[mask]:
                     if heatmap_data.loc[sensor, day] == 0:
-                        heatmap_data.loc[sensor, day] = active_val
+                        heatmap_data.loc[sensor, day] = 1
                 active = False
                 start_active = None
-            elif mode in event_value_map and mode not in ["Start", "End"]:
-                heatmap_data.loc[sensor, d] = event_value_map[mode]
 
+            # Events
+            elif mode == "Change Location":
+                heatmap_data.loc[sensor, d] = 6
+            elif mode in ["Change Battery", "Change Card"]:
+                val = heatmap_data.loc[sensor, d]
+                if mode == "Change Battery":
+                    if val in [0, 1]:
+                        heatmap_data.loc[sensor, d] = 2
+                    elif val == 3:
+                        heatmap_data.loc[sensor, d] = 4
+                elif mode == "Change Card":
+                    if val in [0, 1]:
+                        heatmap_data.loc[sensor, d] = 3
+                    elif val == 2:
+                        heatmap_data.loc[sensor, d] = 4
+
+        # If started but never ended
         if active and start_active is not None:
             mask = (all_days >= start_active) & (all_days <= end_date)
             for day in all_days[mask]:
                 if heatmap_data.loc[sensor, day] == 0:
-                    heatmap_data.loc[sensor, day] = active_val
+                    heatmap_data.loc[sensor, day] = 1
 
         # Hover text
         for day in all_days:
@@ -191,7 +193,9 @@ def build_heatmap(df):
                 text += f"<b>Notes:</b>{day_notes[day]}"
             hover_data.loc[sensor, day] = text
 
+    # ----------------------------
     # Multi-year heatmaps
+    # ----------------------------
     years = sorted(set(all_days.year))
     for yr in years:
         year_days = all_days[all_days.year == yr]
@@ -392,6 +396,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
