@@ -139,6 +139,34 @@ def build_heatmap(df):
             if pd.notna(note) and note != "":
                 day_notes[d] += f"- {note}<br>"
 
+            # Start / End
+            if mode == "Start":
+                start_active = d
+                active = True
+            elif mode == "End" and start_active is not None:
+                mask = (all_days >= start_active) & (all_days <= d)
+                for day in all_days[mask]:
+                    if heatmap_data.loc[sensor, day] == 0:
+                        heatmap_data.loc[sensor, day] = active_val
+                active = False
+                start_active = None
+            # Change Battery / Change Card / Manual / Other / Change Location
+            elif mode in ["Change Battery", "Change Card", "Change Location", "Manual Count", "Other Event"]:
+                current_val = heatmap_data.loc[sensor, d]
+                if mode == "Change Battery":
+                    if current_val == event_value_map["Change Card"]:
+                        heatmap_data.loc[sensor, d] = event_value_map["Battery & Card Change"]
+                    else:
+                        heatmap_data.loc[sensor, d] = event_value_map["Change Battery"]
+                elif mode == "Change Card":
+                    if current_val == event_value_map["Change Battery"]:
+                        heatmap_data.loc[sensor, d] = event_value_map["Battery & Card Change"]
+                    else:
+                        heatmap_data.loc[sensor, d] = event_value_map["Change Card"]
+                else:
+                    heatmap_data.loc[sensor, d] = event_value_map[mode]
+
+
             # Fill values
             if mode == "Start":
                 start_active = d
@@ -376,6 +404,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
