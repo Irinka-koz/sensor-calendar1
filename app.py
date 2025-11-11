@@ -222,7 +222,7 @@ def build_heatmap(df):
         
         # Identify sensors in the target area (e.g., 'Carmel')
         # We need the Area info from the overall filtered_df data
-        hatch_area = 'Carmel' # <--- CHANGE THIS TO 'North' or another area if needed
+        hatch_area = 'North' # <--- CHANGE THIS TO 'North' or another area if needed
 
         # Find which sensor IDs match the hatch area
         hatch_sensor_ids = filtered_df[filtered_df['Area'] == hatch_area]['Sensor_ID'].unique().tolist()
@@ -465,6 +465,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
