@@ -102,6 +102,23 @@ def build_heatmap(df):
     heatmap_data = pd.DataFrame(0, index=sensors, columns=all_days)
     hover_data = pd.DataFrame("", index=sensors, columns=all_days)
 
+    st.subheader("Legend")
+    cols = st.columns(6)  # adjust number of columns per row
+    
+    legend_items = {
+        "Change Battery": "#FF3333",
+        "Change Card": "#FF9900",
+        "Battery & Card Change": "#800080",
+        "Change Location": "#3399FF",
+        "Manual Count": "#FCDC4D",
+        "Other Event": "#D496A7",
+    }
+    
+    # Display legend
+    for i, (label, color) in enumerate(legend_items.items()):
+        col = cols[i % len(cols)]
+        col.markdown(f"<span style='background-color:{color};padding:5px 10px;border-radius:3px;'>{label}</span>", unsafe_allow_html=True)
+    
     #Map sensor metadata (Location/Type) for easy lookup
     sensor_metadata = filtered_df.groupby('Sensor_ID').agg({
         'Location': lambda x: x.iloc[0], # Get the first non-null location
@@ -506,143 +523,8 @@ with col_right:
 # HEATMAP
 # ----------------------------
 st.markdown("---")
-# Legend above the heatmap
-st.subheader("Legend")
-cols = st.columns(6)  # adjust number of columns per row
-
-legend_items = {
-    "Change Battery": "#FF3333",
-    "Change Card": "#FF9900",
-    "Battery & Card Change": "#800080",
-    "Change Location": "#3399FF",
-    "Manual Count": "#FCDC4D",
-    "Other Event": "#D496A7",
-}
-
-# Display legend
-for i, (label, color) in enumerate(legend_items.items()):
-    col = cols[i % len(cols)]
-    col.markdown(f"<span style='background-color:{color};padding:5px 10px;border-radius:3px;'>{label}</span>", unsafe_allow_html=True)
-
-# Then the heatmap
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
