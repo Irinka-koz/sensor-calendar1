@@ -261,10 +261,15 @@ def build_heatmap(df):
                             y=sensor,
                             text=icon,
                             showarrow=False,
-                            font=dict(size=20, color="white"),
+                            font=dict(size=24, color="black"),
                             xref="x",
-                            yref="y"
+                            yref="y",
+                            xanchor="center",
+                            yanchor="middle"
                         ))
+        
+        # Debug: Show how many icons were added
+        st.write(f"📍 Added {len(annotations)} icon(s) for {yr}")
 
         # Set x-axis ticks at month centers
         month_centers = []
@@ -331,7 +336,6 @@ def build_heatmap(df):
         )
 
         st.plotly_chart(fig, use_container_width=True)
-
 # -------------------------
 # App UI
 # -------------------------
@@ -462,6 +466,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
