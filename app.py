@@ -240,20 +240,21 @@ def build_heatmap(df):
 
                 # --- ADD THIS BLOCK ---
         highlight_date = pd.Timestamp("2025-04-01")
-        highlight_sensors = sensors  # or a subset if you want
+       # Filter sensors that are of type "Camera"
+        highlight_sensors = [s for s in sensors if sensor_metadata.get(s, {}).get('Type') == "Camera"]
         highlight_x = [highlight_date] * len(highlight_sensors)
         highlight_y = list(highlight_sensors)
-        highlight_text = ["📌 Important date"] * len(highlight_sensors)
+        highlight_text = ["📷"] * len(highlight_sensors)
         
         fig.add_trace(go.Scatter(
             x=highlight_x,
             y=highlight_y,
-            mode="markers+text",
+            mode="text",
             marker=dict(symbol="star", size=20, color="red"),
             text=highlight_text,
             textposition="top center",
             showlegend=False,
-            hoverinfo="text"
+            hoverinfo="none"
         ))
         # --- END ADDITION ---
 
@@ -458,6 +459,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
