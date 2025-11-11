@@ -194,7 +194,6 @@ def build_heatmap(df):
             hover_data.loc[sensor, day] = text
 
     # Multi-year heatmaps
-# Multi-year heatmaps
     years = sorted(set(all_days.year))
     for yr in years:
         year_days = all_days[all_days.year == yr]
@@ -246,10 +245,18 @@ def build_heatmap(df):
             y=hatch_y,
             mode='markers',
             marker=dict(
-                size=15,  # Adjust size to cover the cell (may require tuning)
-                symbol='hash',
-                color='rgba(0, 0, 0, 0.6)', # Make marker color transparent
+                size=25, # 💡 INCREASED SIZE for better coverage/visibility
+                symbol='square',
+                color='rgba(0, 0, 0, 0)', # Marker background is fully transparent
                 line=dict(width=0),
+                # Ensure this is the syntax for Plotly >= 5.13
+                pattern=dict(
+                    shape='/', # Use diagonal slash
+                    fillmode='overlay',
+                    fgcolor='rgba(0, 0, 0, 0.5)', # Semi-transparent black for the pattern lines
+                    size=10, # Density of the pattern
+                    thickness=2
+                )
             ),
             hoverinfo='none', # Prevent this overlay trace from showing a default hover box
             showlegend=False
@@ -465,6 +472,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
