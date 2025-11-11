@@ -197,8 +197,11 @@ def build_heatmap(df):
         for day in all_days:
             val = heatmap_data.loc[sensor, day]
             status = {0: "Inactive", 1: "Active", 2: "Change Battery",
-                      3: "Change Card", 4: "Battery & Card Change", 5:"Change Location", 6:"Manual Count", 7:"Other Event"}[val]
-            
+                      3: "Change Card", 4: "Battery & Card Change", 5:"Change Location", 6:"Manual Count", 7:"Other Event",
+                      8: "Camera Active", 9: "IR Active", 10: "BT Active", 11: "US Active", 12: "Radar Active"}[val]
+
+            status = status_map.get(val, "Unknown")
+
             # 💡 Access Location and Type from the new metadata dict
             metadata = sensor_metadata.get(sensor, {})
             location = metadata.get('Location', 'N/A')
@@ -438,6 +441,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
