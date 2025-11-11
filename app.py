@@ -94,7 +94,7 @@ def build_heatmap(df):
 
 
     filtered_df['date'] = pd.to_datetime(filtered_df['date'], errors='coerce')
-    start_date = pd.Timestamp("2024-01-01")
+    start_date = pd.Timestamp("2025-01-01")
     end_date = pd.Timestamp(date.today())
     all_days = pd.date_range(start=start_date, end=end_date)
 
@@ -416,6 +416,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
