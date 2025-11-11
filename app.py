@@ -113,7 +113,7 @@ def build_heatmap(df):
 
     # Other colors for events
     color_map = {
-        0: '#FFFFFF',  # Inactive
+        0: '#e5e5e5',  # Inactive
         5: '#3399FF',  # Change Location
         2: '#FF3333',  # Change Battery
         3: '#FF9900',  # Change Card
@@ -208,7 +208,7 @@ def build_heatmap(df):
 
         # Create colorscale including type-specific green shades
         colorscale = [
-            [0/11, "#FFFFFF"],  # Inactive
+            [0/11, "#e5e5e5"],  # Inactive
             [1/11, type_green_map["Camera"]],
             [2/11, type_green_map["IR"]],
             [3/11, type_green_map["BT"]],
@@ -406,6 +406,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
