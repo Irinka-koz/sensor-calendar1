@@ -123,7 +123,7 @@ def build_heatmap(df):
         1: '#00CC66',  # Active
         2: '#FF3333',  # Battery
         3: '#FF9900',  # Card
-        4: 'pink',   # Both800080
+        4: '#800080',   # Both
         5: '#3399FF', #Location
         6: '#FCDC4D', #Manual Count
         7: '#D496A7', #Other Event
@@ -440,6 +440,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
