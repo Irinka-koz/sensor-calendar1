@@ -292,7 +292,7 @@ def build_heatmap(df):
                 for day in active_days:
                     highlight_x.append(day)
                     highlight_y.append(sensor)  # sensor name, same as y-axis of heatmap
-                    highlight_text.append("////")
+                    highlight_text.append("📷")
         
         fig.add_trace(go.Scatter(
             x=highlight_x,
@@ -508,6 +508,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
