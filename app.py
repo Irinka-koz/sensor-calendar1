@@ -115,7 +115,9 @@ def build_heatmap(df):
         2: '#FF3333',  # Battery
         3: '#FF9900',  # Card
         4: '#800080',   # Both
-        5: '#3399FF'
+        5: '#3399FF' #Location
+        6: '#FCDC4D', #Manual Count
+        7:'#D496A7', #Other
     }
 
     # Fill heatmap_data and hover_data
@@ -148,6 +150,10 @@ def build_heatmap(df):
                 start_active = None
             elif mode == "Change Location":
                 heatmap_data.loc[sensor, d] = 5
+            elif mode == "Manual Count":
+                heatmap_data.loc[sensor, d] = 6
+            elif mode == "Other Event":
+                heatmap_data.loc[sensor, d] = 7
             elif mode in ["Change Battery", "Change Card"]:
                 if d in heatmap_data.columns:
                     val = heatmap_data.loc[sensor, d]
@@ -174,7 +180,7 @@ def build_heatmap(df):
         for day in all_days:
             val = heatmap_data.loc[sensor, day]
             status = {0: "Inactive", 1: "Active", 2: "Change Battery",
-                      3: "Change Card", 4: "Battery & Card Change", 5:"Change Location"}[val]
+                      3: "Change Card", 4: "Battery & Card Change", 5:"Change Location", 6:"Manual Count", 7:"Other Event"}[val]
             
             # 💡 Access Location and Type from the new metadata dict
             metadata = sensor_metadata.get(sensor, {})
@@ -206,10 +212,11 @@ def build_heatmap(df):
             y=sensors,
             text=text,
             hoverinfo='text',
-            colorscale=[[0/5, color_map[0]], [1/5, color_map[1]], [2/5, color_map[2]],
-                        [3/5, color_map[3]], [4/5, color_map[4]], [5/5, color_map[5]]],
+            colorscale=[[0/7, color_map[0]], [1/7, color_map[1]], [2/7, color_map[2]],
+                        [3/7, color_map[3]], [4/7, color_map[4]], [5/7, color_map[5]],
+                        [6/7,color_map[4]], [7/7, color_map[5]]],
             zmin=0,
-            zmax=5,
+            zmax=7,
             showscale=False  # hide legend
         ))
 
@@ -417,6 +424,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
