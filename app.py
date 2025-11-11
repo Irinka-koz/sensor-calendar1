@@ -208,17 +208,18 @@ def build_heatmap(df):
 
         # Create colorscale including type-specific green shades
         colorscale = [
-            [0/10, "#FFFFFF"],  # Inactive
-            [1/10, type_green_map["Camera"]],
-            [2/10, type_green_map["IR"]],
-            [3/10, type_green_map["BT"]],
-            [4/10, type_green_map["US"]],
-            [5/10, "#3399FF"],  # Change Location
-            [6/10, "#FF3333"],  # Change Battery
-            [7/10, "#FF9900"],  # Change Card
-            [8/10, "#800080"],  # Battery & Card Change
-            [9/10, "#FCDC4D"],  # Manual Count
-            [10/10,"#D496A7"]   # Other Event
+            [0/11, "#FFFFFF"],  # Inactive
+            [1/11, type_green_map["Camera"]],
+            [2/11, type_green_map["IR"]],
+            [3/11, type_green_map["BT"]],
+            [4/11, type_green_map["US"]],
+            [5/11, type_green_map["Radar"]],
+            [6/11, "#3399FF"],  # Change Location
+            [7/11, "#FF3333"],  # Change Battery
+            [8/11, "#FF9900"],  # Change Card
+            [9/11, "#800080"],  # Battery & Card Change
+            [10/11, "#FCDC4D"],  # Manual Count
+            [11/11,"#D496A7"]   # Other Event
         ]
 
         fig = go.Figure(go.Heatmap(
@@ -229,7 +230,7 @@ def build_heatmap(df):
             hoverinfo='text',
             colorscale=colorscale,
             zmin=0,
-            zmax=10,
+            zmax=11,
             showscale=False
         ))
 
@@ -309,7 +310,7 @@ with st.expander("➕ Add New Sensor"):
         new_id = st.text_input("Sensor ID", key="new_id_form")
         new_area = st.selectbox("Area", ["","North", "South"], key="new_area_form")
         new_location = st.text_input("Location", key="new_location_form")
-        new_type = st.selectbox("Type", ["", "Camera", "IR", "BT", "US"], key="new_type_form")
+        new_type = st.selectbox("Type", ["", "Camera", "IR", "BT", "US", "Radar"], key="new_type_form")
         
         submitted_sensor = st.form_submit_button("Add Sensor", use_container_width=True)
 
@@ -405,6 +406,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
