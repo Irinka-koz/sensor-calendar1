@@ -237,7 +237,7 @@ def build_heatmap(df):
             colorscale = [[i/12, color_map[i]] for i in range(13)],
             zmin=0,
             zmax=12,
-            showscale=False,  # hide legend
+            showscale=True,  # hide legend
             #pattern_shape=pattern_array.values
         ))
 
@@ -509,6 +509,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
