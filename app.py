@@ -222,7 +222,7 @@ def build_heatmap(df):
     
     # Ensure you use the same filtered_df as your heatmap
     for area, color in area_colors.items():
-        area_sensors = filtered_df.loc[filtered_df['Area'].str.lower() == area.lower(), 'Sensor_ID'].unique()
+        area_sensors = filtered_df.loc[filtered_df["Area"] == area, "Sensor_ID"].unique()
         for sensor in area_sensors:
             if sensor not in sensors:
                 continue
@@ -444,6 +444,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
