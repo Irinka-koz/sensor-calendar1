@@ -214,6 +214,34 @@ def build_heatmap(df):
         ))
 
 
+    # --- Add diagonal stripe pattern for 'North' area sensors ---
+    north_sensors = filtered_df.loc[filtered_df['Area'].str.lower() == 'north', 'Sensor_ID'].unique()
+    
+    for sensor in north_sensors:
+        if sensor not in sensors:
+            continue  # skip if sensor not in current heatmap
+        y_index = list(sensors).index(sensor)
+    
+        # Add a transparent rectangle covering the whole row of that sensor
+        fig.add_shape(
+            type="rect",
+            xref="x",
+            yref="y",
+            x0=year_days[0],
+            x1=year_days[-1],
+            y0=y_index - 0.5,
+            y1=y_index + 0.5,
+            line=dict(width=0),
+            fillpattern=dict(
+                shape="/",       # Diagonal stripes
+                fgcolor="rgba(0,0,0,0.25)",  # Dark but transparent
+                bgcolor="rgba(0,0,0,0)"
+            ),
+            layer="below"
+        )
+
+
+
         # Set x-axis ticks at month centers with abbreviations
         month_centers = []
         month_labels = []
@@ -416,6 +444,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
