@@ -219,64 +219,64 @@ def build_heatmap(df):
             
             hover_data.loc[sensor, day] = text
 
-# Multi-year heatmaps
-years = sorted(set(all_days.year))
-for yr in years:
-    year_days = all_days[all_days.year == yr]
-    z = heatmap_data.loc[:, year_days].values
-    text = hover_data.loc[:, year_days].values
-
-    fig = go.Figure(go.Heatmap(
-        z=z,
-        x=year_days,
-        y=sensors,
-        text=text,
-        hoverinfo='text',
-        colorscale = [[i/12, color_map[i]] for i in range(13)],
-        zmin=0,
-        zmax=12,
-        showscale=False  # hide legend
-    ))
-
-    # --- ADD ICONS FOR START EVENTS ---
-    start_x = []
-    start_y = []
-    start_symbols = []
-
-    for sensor in sensors:
-        sdata = filtered_df[filtered_df["Sensor_ID"] == sensor].sort_values("date")
-        sensor_type = sensor_metadata.get(sensor, {}).get('Type', 'Unknown')
-
-        # Find first "Start" event
-        start_row = sdata[sdata["mode"] == "Start"]
-        if not start_row.empty:
-            start_day = start_row.iloc[0]["date"].normalize()
-            if start_day in year_days:
-                start_x.append(start_day)
-                start_y.append(sensor)
-                # map sensor type to symbol
-                symbol_map = {
-                    "Camera": "camera",
-                    "IR": "triangle-up",
-                    "BT": "circle",
-                    "US": "square",
-                    "Radar": "star"
-                }
-                start_symbols.append(symbol_map.get(sensor_type, "diamond"))
-
-    # Overlay the icons
-    fig.add_trace(go.Scatter(
-        x=start_x,
-        y=start_y,
-        mode='markers',
-        marker=dict(
-            symbol=start_symbols,
-            size=20,
-            color='black'
-        ),
-        showlegend=False,
-        hoverinfo='skip'  # keep heatmap hover
-    ))
+    # Multi-year heatmaps
+    years = sorted(set(all_days.year))
+    for yr in years:
+        year_days = all_days[all_days.year == yr]
+        z = heatmap_data.loc[:, year_days].values
+        text = hover_data.loc[:, year_days].values
+    
+        fig = go.Figure(go.Heatmap(
+            z=z,
+            x=year_days,
+            y=sensors,
+            text=text,
+            hoverinfo='text',
+            colorscale = [[i/12, color_map[i]] for i in range(13)],
+            zmin=0,
+            zmax=12,
+            showscale=False  # hide legend
+        ))
+    
+        # --- ADD ICONS FOR START EVENTS ---
+        start_x = []
+        start_y = []
+        start_symbols = []
+    
+        for sensor in sensors:
+            sdata = filtered_df[filtered_df["Sensor_ID"] == sensor].sort_values("date")
+            sensor_type = sensor_metadata.get(sensor, {}).get('Type', 'Unknown')
+    
+            # Find first "Start" event
+            start_row = sdata[sdata["mode"] == "Start"]
+            if not start_row.empty:
+                start_day = start_row.iloc[0]["date"].normalize()
+                if start_day in year_days:
+                    start_x.append(start_day)
+                    start_y.append(sensor)
+                    # map sensor type to symbol
+                    symbol_map = {
+                        "Camera": "camera",
+                        "IR": "triangle-up",
+                        "BT": "circle",
+                        "US": "square",
+                        "Radar": "star"
+                    }
+                    start_symbols.append(symbol_map.get(sensor_type, "diamond"))
+    
+        # Overlay the icons
+        fig.add_trace(go.Scatter(
+            x=start_x,
+            y=start_y,
+            mode='markers',
+            marker=dict(
+                symbol=start_symbols,
+                size=20,
+                color='black'
+            ),
+            showlegend=False,
+            hoverinfo='skip'  # keep heatmap hover
+        ))
 
         # Set x-axis ticks at month centers with abbreviations
         month_centers = []
@@ -480,6 +480,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
