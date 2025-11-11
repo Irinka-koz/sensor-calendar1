@@ -143,6 +143,11 @@ def build_heatmap(df):
     # Track start dates for each sensor
     sensor_start_dates = {}
     
+    # DEBUG: Check what data we have
+    st.write("🔍 Debug Info:")
+    st.write(f"Total sensors: {len(sensors)}")
+    st.write(f"Date range: {start_date} to {end_date}")
+    
     # Fill heatmap_data and hover_data
     for sensor in sensors:
         sdata = filtered_df[filtered_df["Sensor_ID"] == sensor].sort_values("date")
@@ -169,6 +174,7 @@ def build_heatmap(df):
                 if sensor not in sensor_start_dates:
                     sensor_start_dates[sensor] = []
                 sensor_start_dates[sensor].append(d)
+                st.write(f"✅ Found Start event: Sensor {sensor}, Date {d}, Type: {sensor_type}")
             elif mode == "End" and start_active is not None:
                 mask = (all_days >= start_active) & (all_days <= d)
                 for day in all_days[mask]:
@@ -227,6 +233,10 @@ def build_heatmap(df):
                 text += f"<b>Notes:</b>{day_notes[day]}"
             
             hover_data.loc[sensor, day] = text
+
+    # DEBUG: Show what start dates we found
+    st.write(f"📌 Total start dates found: {sum(len(dates) for dates in sensor_start_dates.values())}")
+    st.write("Start dates by sensor:", sensor_start_dates)
 
     # Multi-year heatmaps
     years = sorted(set(all_days.year))
@@ -335,7 +345,7 @@ def build_heatmap(df):
             height=len(sensors)*60 + 150
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True))
 # -------------------------
 # App UI
 # -------------------------
@@ -466,6 +476,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
