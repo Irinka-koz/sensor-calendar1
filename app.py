@@ -219,6 +219,19 @@ def build_heatmap(df):
             
             hover_data.loc[sensor, day] = text
 
+
+    # Initialize empty pattern array with same shape as heatmap_data
+    pattern_array = pd.DataFrame("", index=sensors, columns=all_days)
+    
+    # Fill '////' for sensors in Area "North"
+    for sensor in sensors:
+        area = sensor_metadata.get(sensor, {}).get("Area", "")
+        if area == "North":
+            sensor_row = heatmap_data.loc[sensor]
+            active_days = sensor_row[sensor_row > 0].index  # only active days
+            pattern_array.loc[sensor, active_days] = "////"  # diagonal lines
+
+    
     # Multi-year heatmaps
     years = sorted(set(all_days.year))
     for yr in years:
@@ -236,6 +249,7 @@ def build_heatmap(df):
             zmin=0,
             zmax=12,
             showscale=False  # hide legend
+            pattern_shape=pattern_array.values
         ))
 
 
@@ -507,6 +521,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
