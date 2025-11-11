@@ -131,7 +131,7 @@ def build_heatmap(df):
         9: '#03C03C',  # Lighter Green (IR)
         10: '#808000',  # Lightest Green (BT)
         11: '#388E3C',  # Darker Green (US)
-        12: 'pink'   # Darkest Green (Radar)1B5E20
+        12: '#1B5E20'   # Darkest Green (Radar)
     }
 
     
@@ -440,6 +440,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
