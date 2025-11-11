@@ -108,9 +108,18 @@ def build_heatmap(df):
         'Type': lambda x: x.iloc[0]       # Get the first non-null type
     }).to_dict(orient='index')
 
+    # Define Mappings (Paste TYPE_MAPPING and GREEN_SHADES here)
+    TYPE_MAPPING = {
+        "Camera": 8,
+        "IR": 9,
+        "BT": 10,
+        "US": 11,
+        "Radar": 12
+    }
+    
     # Colors mapping
     color_map = {
-        0: '#FFFFFF',  # Inactive
+        0: '#e5e5e5',  # Inactive
         1: '#00CC66',  # Active
         2: '#FF3333',  # Battery
         3: '#FF9900',  # Card
@@ -118,11 +127,19 @@ def build_heatmap(df):
         5: '#3399FF', #Location
         6: '#FCDC4D', #Manual Count
         7:'#D496A7', #Other
+        8: '#4CAF50',  # Medium Green (Camera)
+        9: '#66BB6A',  # Lighter Green (IR)
+        10: '#81C784',  # Lightest Green (BT)
+        11: '#388E3C',  # Darker Green (US)
+        12: '#1B5E20'   # Darkest Green (Radar)
     }
 
+    
     # Fill heatmap_data and hover_data
     for sensor in sensors:
         sdata = filtered_df[filtered_df["Sensor_ID"] == sensor].sort_values("date")
+        sensor_type = sensor_metadata.get(sensor, {}).get('Type', 'Unknown')
+        active_value = TYPE_MAPPING.get(sensor_type, 1) # Default to 1 if type is missing/unknown
         active = False
         start_active = None
         day_notes = {day: "" for day in all_days}
@@ -145,7 +162,7 @@ def build_heatmap(df):
                 mask = (all_days >= start_active) & (all_days <= d)
                 for day in all_days[mask]:
                     if heatmap_data.loc[sensor, day] == 0:
-                        heatmap_data.loc[sensor, day] = 1
+                        heatmap_data.loc[sensor, day] = active_value
                 active = False
                 start_active = None
             elif mode == "Change Location":
@@ -173,7 +190,7 @@ def build_heatmap(df):
             mask = (all_days >= start_active) & (all_days <= end_date)
             for day in all_days[mask]:
                 if heatmap_data.loc[sensor, day] == 0:
-                    heatmap_data.loc[sensor, day] = 1
+                    heatmap_data.loc[sensor, day] = active_value
 
 
         # Build hover text
@@ -212,11 +229,13 @@ def build_heatmap(df):
             y=sensors,
             text=text,
             hoverinfo='text',
-            colorscale=[[0/7, color_map[0]], [1/7, color_map[1]], [2/7, color_map[2]],
-                        [3/7, color_map[3]], [4/7, color_map[4]], [5/7, color_map[5]],
-                        [6/7,color_map[4]], [7/7, color_map[5]]],
+            colorscale=[[0/12, color_map[0]], [1/12, color_map[1]], [2/12, color_map[2]],
+                        [3/12, color_map[3]], [4/12, color_map[4]], [5/12, color_map[5]],
+                        [6/12, color_map[6]], [7/12, color_map[7]], [8/12, color_map[8]],
+                        [9/12, color_map[9]], [10/12, color_map[10]], [11/12, color_map[11]],
+                        [12/12,color_map[12]]]
             zmin=0,
-            zmax=7,
+            zmax=12,
             showscale=False  # hide legend
         ))
 
@@ -423,6 +442,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
