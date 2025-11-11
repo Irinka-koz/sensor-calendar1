@@ -104,22 +104,22 @@ def build_heatmap(df):
 
     # Green shades per sensor type
     type_green_map = {
-        "Camera": "#014421",
-        "IR": "#03C03C",
-        "BT": "#66CC33",
-        "US": "#99CC33",
-        "Radar": "#00CC66"
+        "Camera": 1,
+        "IR": 2,
+        "BT": 3,
+        "US": 4,
+        "Radar": 5
     }
 
     # Other colors for events
     color_map = {
-        0: '#e5e5e5',  # Inactive
-        5: '#3399FF',  # Change Location
-        2: '#FF3333',  # Change Battery
-        3: '#FF9900',  # Change Card
-        4: '#800080',  # Battery & Card Change
-        6: '#FCDC4D',  # Manual Count
-        7: '#D496A7',  # Other Event
+        "Change Location": 6,
+        "Change Battery": 7,
+        "Change Card": 8,
+        "Battery & Card Change": 9,
+        "Manual Count": 10,
+        "Other Event": 11,
+        "Inactive": 0
     }
 
     # Map Active per type to custom values to assign colorscale
@@ -208,18 +208,18 @@ def build_heatmap(df):
 
         # Create colorscale including type-specific green shades
         colorscale = [
-            [0/12, "#e5e5e5"],  # Inactive
-            [1/12, type_green_map["Camera"]],
-            [2/12, type_green_map["IR"]],
-            [3/12, type_green_map["BT"]],
-            [4/12, type_green_map["US"]],
-            [5/12, type_green_map["Radar"]],
-            [6/12, "#3399FF"],  # Change Location
-            [7/12, "#FF3333"],  # Change Battery
-            [8/12, "#FF9900"],  # Change Card
-            [9/12, "#800080"],  # Battery & Card Change
-            [10/12, "#FCDC4D"],  # Manual Count
-            [11/12,"#D496A7"]   # Other Event
+            [0/11, "#e5e5e5"],   # Inactive
+            [1/11, "#014421"],   # Camera
+            [2/11, "#03C03C"],   # IR
+            [3/11, "#66CC33"],   # BT
+            [4/11, "#99CC33"],   # US
+            [5/11, "#00CC66"],   # Radar
+            [6/11, "#3399FF"],   # Change Location
+            [7/11, "#FF3333"],   # Change Battery
+            [8/11, "#FF9900"],   # Change Card
+            [9/11, "#800080"],   # Battery & Card Change
+            [10/11, "#FCDC4D"],  # Manual Count
+            [11/11, "#D496A7"]   # Other Event
         ]
 
         fig = go.Figure(go.Heatmap(
@@ -406,6 +406,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
