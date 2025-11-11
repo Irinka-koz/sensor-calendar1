@@ -246,18 +246,10 @@ def build_heatmap(df):
             y=hatch_y,
             mode='markers',
             marker=dict(
-                size=12,  # Adjust size to cover the cell (may require tuning)
-                symbol='square',
-                color='rgba(0, 0, 0, 0)', # Make marker color transparent
+                size=15,  # Adjust size to cover the cell (may require tuning)
+                symbol='hash',
+                color='rgba(0, 0, 0, 0.6)', # Make marker color transparent
                 line=dict(width=0),
-                # 💡 Plotly native pattern support for markers
-                pattern=dict(
-                    shape='slash', # Options: 'x', 'plus', 'dot', 'dash', 'slash', 'backslash', etc.
-                    fillmode='overlay',
-                    fgcolor='rgba(0, 0, 0, 0.4)', # Gray-ish semi-transparent pattern color
-                    size=6,
-                    thickness=1
-                )
             ),
             hoverinfo='none', # Prevent this overlay trace from showing a default hover box
             showlegend=False
@@ -473,6 +465,7 @@ with col_right:
 st.markdown("---")
 st.header("Sensor Maintenance Calendar")
 build_heatmap(df)
+
 
 
 
